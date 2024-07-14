@@ -12,6 +12,48 @@ void ChessBoard::removePiece(PieceType pt, Color c, Square square) {
     colors[c] &= ~bb;
 }
 
+ChessBoard FenEncoder(std::string input) {
+    ChessBoard NewChessboard;
+    size_t cur_ind = 0;
+    for (int rank = 7; rank >= 0; --rank) {
+        int file = 0;
+        while (file < 8) {
+            if (isdigit(input[cur_ind])) {
+                file += (input[cur_ind] - '0');
+                ++cur_ind;
+            } else {
+                NewChessboard.setPiece(FenPiecesCodes[tolower(input[cur_ind])], (Color)islower(input[cur_ind]),
+                                       WhichSquare(rank, file));
+                ++cur_ind;
+                ++file;
+            }
+        }
+        ++cur_ind;
+    }
+    return NewChessboard;
+}
+
+ChessBoard::ChessBoard() {
+    colors[0] = 0;
+    colors[1] = 0;
+    for (int i = 0; i < PIECE_NB; ++i) {
+        pieces[i] = 0;
+    }
+}
+
+ChessBoard ChessBoard::operator=(const ChessBoard& rhs) {
+    ChessBoard ans;
+    memcpy(ans.colors, rhs.colors, sizeof rhs.colors);
+    memcpy(ans.pieces, rhs.pieces, sizeof rhs.pieces);
+    return ans;
+}
+
+ChessBoard::ChessBoard(std::string input) {
+    ChessBoard buff = FenEncoder(input);
+    memcpy(colors, buff.colors, sizeof buff.colors);
+    memcpy(pieces, buff.pieces, sizeof buff.pieces);
+}
+
 void ChessBoard::printBoard() {
     char board[8][8];
     for (int i = 0; i < 8; ++i) {
@@ -60,4 +102,11 @@ void ChessBoard::printBoard() {
         }
         std::cout << '\n';
     }
+}
+
+int main() {
+    ChessBoard hgh("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    // ChessBoard hgh;
+    hgh.printBoard();
+    // std::cout << hgh.colors[0] << '\n' << hgh.pieces[0];
 }

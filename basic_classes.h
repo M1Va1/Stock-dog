@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 
 typedef uint64_t Bitboard;
@@ -16,6 +17,10 @@ enum Square : uint8_t {
     A8, B8, C8, D8, E8, F8, G8, H8, 
 };
 
+inline Square WhichSquare(uint8_t rank, uint8_t file){
+    return (Square)(rank * 8 + file);
+}
+
 enum PieceType : uint8_t {
     PAWN,
     KNIGHT,
@@ -26,6 +31,8 @@ enum PieceType : uint8_t {
 
     PIECE_NB = 6
 };
+
+std::map <char,PieceType> FenPiecesCodes =  {{'p', PAWN}, {'n', KNIGHT},{'b', BISHOP},{'r', ROOK},{'q', QUEEN},{'k', KING}};
 
 enum Color : uint8_t {
     WHITE,
@@ -56,6 +63,7 @@ enum Direction : int8_t {
     DOWN_RIGHT = -7
 };
 
+
 inline Bitboard squareToBitboard(int square) {
     return Bitboard(1) << square;
 }
@@ -65,10 +73,15 @@ public:
     Bitboard pieces[PIECE_NB];
     Bitboard colors[COLOR_NB];
 
+    ChessBoard(std::string input);
+    ChessBoard();
+
     void setPiece(PieceType pt, Color c, Square square);
 
     void removePiece(PieceType pt, Color c, Square square);
 
     void printBoard();
+
+    ChessBoard operator = (const ChessBoard& rhs);
 };
 
