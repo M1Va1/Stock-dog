@@ -60,21 +60,15 @@ inline Bitboard squareToBitboard(int square) {
     return Bitboard(1) << square;
 }
 
-struct ChessBoard {
+class ChessBoard {
+public:
     Bitboard pieces[PIECE_NB];
     Bitboard colors[COLOR_NB];
 
-    void setPiece(PieceType pt, Color c, Square square) {
-        Bitboard bb = squareToBitboard(square);
-        pieces[pt] |= bb;
-        colors[c]  |= bb;
-    }
+    void setPiece(PieceType pt, Color c, Square square);
 
-    void removePiece(PieceType pt, Color c, Square square) {
-        Bitboard bb = squareToBitboard(square);
-        pieces[pt] &= ~bb;
-        colors[c]  &= ~bb;
-    }
+    void removePiece(PieceType pt, Color c, Square square);
+
+    void printBoard();
 };
-
 
