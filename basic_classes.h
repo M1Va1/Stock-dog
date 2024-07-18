@@ -68,7 +68,14 @@ Bitboard SquareToBitboard(const Square square) {
     return Bitboard(1) << square;
 }
 
-enum MoveType { NORMAL, PROMOTION = 1 << 14, EN_PASSANT = 2 << 14, CASTLING = 3 << 14 };
+// clang-format off
+enum MoveType : uint16_t { 
+    NORMAL, 
+    PROMOTION = 1 << 14,
+    EN_PASSANT = 2 << 14,
+    CASTLING = 3 << 14 
+};
+// clang-format on
 
 struct Move {
     Square from;
