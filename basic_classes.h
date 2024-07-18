@@ -7,7 +7,7 @@
 using Bitboard = uint64_t;
 
 // clang-format off
-enum Square : uint8_t {
+enum Square : uint16_t {
     A1, B1, C1, D1, E1, F1, G1, H1,
     A2, B2, C2, D2, E2, F2, G2, H2,
     A3, B3, C3, D3, E3, F3, G3, H3,
@@ -76,9 +76,31 @@ enum MoveType : uint16_t {
     CASTLING = 3 << 14
 };
 
-struct Move {
-    Square from;
-    Square to;
+
+
+/*
+0-5  -- initial square
+6-11 -- destination square
+...  -- something in future
+*/
+class Move {
+public:
+    Move() : description(0) {};
+    Move(Square from, Square to);
+
+    void SetFrom(const Square from);
+    void SetTo(const Square to);
+
+    Square GetFrom() const;
+    Square GetTo() const;
+
+private:
+    Bitboard description;
+};
+
+enum MoveMask : uint16_t {
+    FROM_MASK = 0b1111110000000000,
+    TO_MASK   = 0b0000001111110000,
 };
 
 bool IsOccupied(const Bitboard bb, const Square sq);

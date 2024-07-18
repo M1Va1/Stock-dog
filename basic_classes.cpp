@@ -29,9 +29,9 @@ Piece ChessBoard::PieceOnSquare(const Square sq) {
 };
 
 void ChessBoard::MakeMove(const Move cur_move) {
-    Piece buff = RemovePiece(cur_move.from);
-    RemovePiece(cur_move.to);
-    SetPiece(buff.type, buff.color, cur_move.to);
+    Piece buff = RemovePiece(cur_move.GetFrom());
+    RemovePiece(cur_move.GetTo());
+    SetPiece(buff.type, buff.color, cur_move.GetTo());
 }
 
 ChessBoard FenEncoder(std::string input) {
@@ -93,4 +93,27 @@ void ChessBoard::PrintBoard() const {
         }
         std::cout << '\n';
     }
+}
+
+void Move::SetFrom(const Square from) {
+    description &= ~FROM_MASK;
+    description |= from;
+}
+
+void Move::SetTo(const Square to) {
+    description &= ~TO_MASK;
+    description |= (to << 6);
+}
+
+Square Move::GetFrom() const {
+    return static_cast<Square>(description & TO_MASK);
+}
+
+Square Move::GetTo() const {
+    return static_cast<Square>((description & FROM_MASK) >> 6);
+}
+
+Move::Move(Square from, Square to) {
+    SetFrom(from);
+    SetTo(to);
 }
