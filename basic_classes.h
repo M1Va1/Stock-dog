@@ -1,10 +1,10 @@
+#include <array>
 #include <iostream>
-#include <vector>
 #include <map>
 #include <string>
-#include <array>
+#include <vector>
 
-typedef uint64_t Bitboard;
+using Bitboard = uint64_t;
 
 // clang-format off
 enum Square : uint8_t {
@@ -17,12 +17,11 @@ enum Square : uint8_t {
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8, 
 };
+// clang-format on
 
-inline Square WhichSquare(uint8_t rank, uint8_t file){
+inline Square WhichSquare(uint8_t rank, uint8_t file) {
     return (Square)(rank * 8 + file);
 }
-
-
 
 enum PieceType : uint8_t {
     NONE,
@@ -36,7 +35,10 @@ enum PieceType : uint8_t {
     PIECE_NB = 7
 };
 
-std::map <char,PieceType> FenPiecesCodes =  {{'p', PAWN}, {'n', KNIGHT},{'b', BISHOP},{'r', ROOK},{'q', QUEEN},{'k', KING}};
+std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
+                                           {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
+std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
+                                          {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
 
 enum Color : uint8_t {
     WHITE,
@@ -50,8 +52,6 @@ struct Piece {
     Color color;
 };
 
-
-
 enum Direction : int8_t {
     UP = 8,
     DOWN = -8,
@@ -64,50 +64,39 @@ enum Direction : int8_t {
     DOWN_RIGHT = -7
 };
 
-
-
-inline Bitboard squareToBitboard(int square) {
+Bitboard SquareToBitboard(const Square square) {
     return Bitboard(1) << square;
 }
 
-enum MoveType {
-    NORMAL,
-    PROMOTION  = 1 << 14,
-    EN_PASSANT = 2 << 14,
-    CASTLING   = 3 << 14
-};
+enum MoveType { NORMAL, PROMOTION = 1 << 14, EN_PASSANT = 2 << 14, CASTLING = 3 << 14 };
 
-struct Move{
+struct Move {
     Square from;
     Square to;
 };
 
-bool IsTrueInSqure(const Bitboard& bb, const Square& sq);
+bool IsOccupied(const Bitboard bb, const Square sq);
 
-bool AvailableMove(const Move& move);
+bool AvailableMove(const Move move);
 
 class ChessBoard {
 public:
-    std::array<Bitboard, PIECE_NB> pieces;
-    std::array<Bitboard, COLOR_NB> colors;
-
     ChessBoard(std::string input);
-    
     ChessBoard();
 
-    void setPiece(const PieceType& pt, const Color& c, const Square& square);
+    void SetPiece(const PieceType pt, const Color c, const Square square);
 
-    Piece removePiece(Square& square);
+    Piece RemovePiece(const Square square);
 
-    Piece PieceOnSquare(Square& sq);
-    bool AvailableMove(Move& move);
-    
-    void DoMove(Move cur_move);
+    Piece PieceOnSquare(const Square sq);
 
-    void printBoard();
+    void MakeMove(const Move cur_move);
 
-    ChessBoard operator = (const ChessBoard& rhs);
+    void PrintBoard() const;
+
+    ChessBoard& operator=(const ChessBoard& rhs) = default;
+
+private:
+    std::array<Bitboard, PIECE_NB> pieces;
+    std::array<Bitboard, COLOR_NB> colors;
 };
-
-
-
