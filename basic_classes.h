@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <array>
 
 typedef uint64_t Bitboard;
 
@@ -21,7 +22,10 @@ inline Square WhichSquare(uint8_t rank, uint8_t file){
     return (Square)(rank * 8 + file);
 }
 
+
+
 enum PieceType : uint8_t {
+    NONE,
     PAWN,
     KNIGHT,
     BISHOP,
@@ -29,7 +33,7 @@ enum PieceType : uint8_t {
     QUEEN,
     KING,
 
-    PIECE_NB = 6
+    PIECE_NB = 7
 };
 
 std::map <char,PieceType> FenPiecesCodes =  {{'p', PAWN}, {'n', KNIGHT},{'b', BISHOP},{'r', ROOK},{'q', QUEEN},{'k', KING}};
@@ -46,10 +50,7 @@ struct Piece {
     Color color;
 };
 
-struct Move {
-    Square from;
-    Square to;
-};
+
 
 enum Direction : int8_t {
     UP = 8,
@@ -64,24 +65,49 @@ enum Direction : int8_t {
 };
 
 
+
 inline Bitboard squareToBitboard(int square) {
     return Bitboard(1) << square;
 }
 
+enum MoveType {
+    NORMAL,
+    PROMOTION  = 1 << 14,
+    EN_PASSANT = 2 << 14,
+    CASTLING   = 3 << 14
+};
+
+struct Move{
+    Square from;
+    Square to;
+};
+
+bool IsTrueInSqure(const Bitboard& bb, const Square& sq);
+
+bool AvailableMove(const Move& move);
+
 class ChessBoard {
 public:
-    Bitboard pieces[PIECE_NB];
-    Bitboard colors[COLOR_NB];
+    std::array<Bitboard, PIECE_NB> pieces;
+    std::array<Bitboard, COLOR_NB> colors;
 
     ChessBoard(std::string input);
+    
     ChessBoard();
 
-    void setPiece(PieceType pt, Color c, Square square);
+    void setPiece(const PieceType& pt, const Color& c, const Square& square);
 
-    void removePiece(PieceType pt, Color c, Square square);
+    Piece removePiece(Square& square);
+
+    Piece PieceOnSquare(Square& sq);
+    bool AvailableMove(Move& move);
+    
+    void DoMove(Move cur_move);
 
     void printBoard();
 
     ChessBoard operator = (const ChessBoard& rhs);
 };
+
+
 
