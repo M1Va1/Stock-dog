@@ -102,7 +102,7 @@ private:
 
 enum MoveMask : uint16_t {
     FROM_MASK = 0b1111110000000000,
-    TO_MASK = 0b0000001111110000,
+    TO_MASK   = 0b0000001111110000,
 };
 
 bool IsOccupied(const Bitboard bb, const Square sq);
