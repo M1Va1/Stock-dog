@@ -68,6 +68,10 @@ Bitboard SquareToBitboard(const Square square) {
     return Bitboard(1) << square;
 }
 
+Bitboard MoveSquare(const Bitboard bb, const Direction dir) {
+    return dir > 0 ? bb << dir : bb >> -dir;
+}
+
 enum MoveType : uint16_t {
     NORMAL,
 
@@ -75,8 +79,6 @@ enum MoveType : uint16_t {
     EN_PASSANT = 2 << 14,
     CASTLING = 3 << 14
 };
-
-
 
 /*
 0-5  -- initial square
@@ -100,7 +102,7 @@ private:
 
 enum MoveMask : uint16_t {
     FROM_MASK = 0b1111110000000000,
-    TO_MASK   = 0b0000001111110000,
+    TO_MASK = 0b0000001111110000,
 };
 
 bool IsOccupied(const Bitboard bb, const Square sq);
@@ -113,13 +115,12 @@ public:
     ChessBoard();
 
     void SetPiece(const PieceType pt, const Color c, const Square square);
-
     Piece RemovePiece(const Square square);
-
     Piece PieceOnSquare(const Square sq);
+    Bitboard GetPieces(const Color color, const PieceType piece) const;
 
     void MakeMove(const Move cur_move);
-
+    
     void PrintBoard() const;
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;

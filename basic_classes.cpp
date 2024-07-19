@@ -67,6 +67,10 @@ ChessBoard::ChessBoard(std::string input) {
     pieces = buff.pieces;
 }
 
+Bitboard ChessBoard::GetPieces(const Color color, const PieceType piece) const {
+    return pieces[piece] & colors[color];
+}
+
 void ChessBoard::PrintBoard() const {
     std::array<std::array<char, 8>, 8> board;
     board.fill(std::array<char, 8>{});
