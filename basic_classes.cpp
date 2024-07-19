@@ -73,8 +73,6 @@ Bitboard ChessBoard::GetPieces(const Color color, const PieceType piece) const {
 
 void ChessBoard::PrintBoard() const {
     std::array<std::array<char, 8>, 8> board;
-    board.fill(std::array<char, 8>{});
-
     for (size_t pt = 0; pt < PIECE_NB; ++pt) {
         for (size_t sq = 0; sq < 64; ++sq) {
             Square square = static_cast<Square>(sq);
@@ -82,7 +80,7 @@ void ChessBoard::PrintBoard() const {
                 int row = sq / 8;
                 int col = sq % 8;
 
-                char piece_char = FenPieceCodes[pt];
+                char piece_char = PieceLetters[static_cast<PieceType>(pt)];
                 if (colors[WHITE] & SquareToBitboard(square)) {
                     piece_char = toupper(piece_char);
                 }
@@ -90,9 +88,9 @@ void ChessBoard::PrintBoard() const {
             }
         }
     }
-
-    for (size_t i = 7; i >= 0; --i) {
-        for (size_t j = 0; j < 8; ++j) {
+    std::cout << "gjhegeigh\n";
+    for (int i = 7; i >= 0; --i) {
+        for (int j = 0; j < 8; ++j) {
             std::cout << board[i][j] << ' ';
         }
         std::cout << '\n';
@@ -101,23 +99,29 @@ void ChessBoard::PrintBoard() const {
 
 void Move::SetFrom(const Square from) {
     description &= ~FROM_MASK;
-    description |= from;
+    description |= (from << FROM_BITS);
 }
 
 void Move::SetTo(const Square to) {
     description &= ~TO_MASK;
-    description |= (to << 6);
+    description |= (to << TO_BITS);
 }
 
 Square Move::GetFrom() const {
-    return static_cast<Square>(description & TO_MASK);
+    return static_cast<Square>((description & FROM_MASK) >> FROM_BITS);
 }
 
 Square Move::GetTo() const {
-    return static_cast<Square>((description & FROM_MASK) >> 6);
+    return static_cast<Square>((description & TO_MASK) >> TO_BITS);
 }
 
 Move::Move(Square from, Square to) {
     SetFrom(from);
     SetTo(to);
 }
+
+// int main() {
+//     ChessBoard hgh("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+//     // hgh.MakeMove({E1, A8});
+//     hgh.PrintBoard();
+// }

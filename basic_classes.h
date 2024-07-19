@@ -6,6 +6,9 @@
 
 using Bitboard = uint64_t;
 
+uint8_t FROM_BITS = 10;
+uint8_t TO_BITS = 4;
+
 // clang-format off
 enum Square : uint16_t {
     A1, B1, C1, D1, E1, F1, G1, H1,
@@ -87,7 +90,7 @@ enum MoveType : uint16_t {
 */
 class Move {
 public:
-    Move() : description(0) {};
+    Move() : description(0){};
     Move(Square from, Square to);
 
     void SetFrom(const Square from);
@@ -97,12 +100,12 @@ public:
     Square GetTo() const;
 
 private:
-    Bitboard description;
+    uint16_t description;
 };
 
 enum MoveMask : uint16_t {
     FROM_MASK = 0b1111110000000000,
-    TO_MASK   = 0b0000001111110000,
+    TO_MASK = 0b0000001111110000,
 };
 
 bool IsOccupied(const Bitboard bb, const Square sq);
@@ -120,7 +123,7 @@ public:
     Bitboard GetPieces(const Color color, const PieceType piece) const;
 
     void MakeMove(const Move cur_move);
-    
+
     void PrintBoard() const;
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
