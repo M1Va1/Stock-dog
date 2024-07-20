@@ -90,7 +90,7 @@ enum MoveType : uint16_t {
 */
 class Move {
 public:
-    Move() : description(0){};
+    Move() : description(0) {};
     Move(Square from, Square to);
 
     void SetFrom(const Square from);
@@ -108,21 +108,21 @@ enum MoveMask : uint16_t {
     TO_MASK = 0b0000001111110000,
 };
 
-bool IsOccupied(const Bitboard bb, const Square sq);
+bool IsOccupied(Bitboard bb, Square sq);
 
-bool AvailableMove(const Move move);
+bool AvailableMove(Move move);
 
 class ChessBoard {
 public:
     ChessBoard(std::string input);
     ChessBoard();
 
-    void SetPiece(const PieceType pt, const Color c, const Square square);
-    Piece RemovePiece(const Square square);
-    Piece PieceOnSquare(const Square sq);
-    Bitboard GetPieces(const Color color, const PieceType piece) const;
+    void SetPiece(PieceType pt, Color c, Square square);
+    Piece RemovePiece(Square square);
+    Piece PieceOnSquare(Square sq);
+    Bitboard GetPieces(Color color, PieceType piece) const;
 
-    void MakeMove(const Move cur_move);
+    void MakeMove(Move cur_move);
 
     void PrintBoard() const;
 
