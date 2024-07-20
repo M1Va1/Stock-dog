@@ -42,6 +42,11 @@ std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BIS
                                            {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
 std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
                                           {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
+std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
+
+std::string SquareToString(Square sq) {
+    return std::string(1, FileLetters[sq % 8]) + std::to_string(sq / 8 + 1);
+}
 
 enum Color : uint8_t {
     WHITE,
@@ -73,6 +78,26 @@ Bitboard SquareToBitboard(const Square square) {
 
 Bitboard MoveSquare(const Bitboard bb, const Direction dir) {
     return dir > 0 ? bb << dir : bb >> -dir;
+}
+
+enum Rank : Bitboard {
+    RANK_1 = 0b11111111ULL,
+    RANK_2 = RANK_1 << UP,
+    RANK_3 = RANK_2 << UP,
+    RANK_4 = RANK_3 << UP,
+    RANK_5 = RANK_4 << UP,
+    RANK_6 = RANK_5 << UP,
+    RANK_7 = RANK_6 << UP,
+    RANK_8 = RANK_7 << UP
+};
+
+std::vector<Square> GetSquares(Bitboard bb) {
+    std::vector<Square> squares;
+    while (bb) {
+        squares.push_back(static_cast<Square>(std::countr_zero(bb)));
+        bb &= bb - 1;
+    }
+    return squares;
 }
 
 enum MoveType : uint16_t {
@@ -121,8 +146,12 @@ public:
     Piece RemovePiece(Square square);
     Piece PieceOnSquare(Square sq);
     Bitboard GetPieces(Color color, PieceType piece) const;
+    Bitboard GetEmptySquares() const {
+        return pieces[NONE];
+    };
 
     void MakeMove(Move cur_move);
+    std::vector<Move> GenPawnMoves(const Color color);
 
     void PrintBoard() const;
 
