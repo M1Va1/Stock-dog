@@ -73,6 +73,9 @@ Bitboard ChessBoard::GetPieces(const Color color, const PieceType piece) const {
 
 void ChessBoard::PrintBoard() const {
     std::array<std::array<char, 8>, 8> board;
+    for (int i = 0; i < 8; ++i)
+        board[i].fill('.');
+
     for (size_t pt = 0; pt < PIECE_NB; ++pt) {
         for (size_t sq = 0; sq < 64; ++sq) {
             Square square = static_cast<Square>(sq);
@@ -120,8 +123,11 @@ Move::Move(Square from, Square to) {
     SetTo(to);
 }
 
-// int main() {
-//     ChessBoard hgh("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-//     // hgh.MakeMove({E1, A8});
-//     hgh.PrintBoard();
-// }
+int main() {
+    ChessBoard hgh("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    hgh.MakeMove({E1, E5});
+    hgh.MakeMove({E1, E5});
+    hgh.MakeMove({E5, E1});
+
+    hgh.PrintBoard();
+}
