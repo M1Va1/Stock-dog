@@ -22,10 +22,6 @@ enum Square : uint16_t {
 };
 // clang-format on
 
-inline Square WhichSquare(uint8_t rank, uint8_t file) {
-    return (Square)(rank * 8 + file);
-}
-
 enum PieceType : uint8_t {
     NONE,
     PAWN,
@@ -37,16 +33,6 @@ enum PieceType : uint8_t {
 
     PIECE_NB = 7
 };
-
-std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
-                                           {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
-std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
-                                          {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
-std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
-
-std::string SquareToString(Square sq) {
-    return std::string(1, FileLetters[sq % 8]) + std::to_string(sq / 8 + 1);
-}
 
 enum Color : uint8_t {
     WHITE,
@@ -72,14 +58,6 @@ enum Direction : int8_t {
     DOWN_RIGHT = -7
 };
 
-Bitboard SquareToBitboard(const Square square) {
-    return Bitboard(1) << square;
-}
-
-Bitboard MoveSquare(const Bitboard bb, const Direction dir) {
-    return dir > 0 ? bb << dir : bb >> -dir;
-}
-
 enum Rank : Bitboard {
     RANK_1 = 0b11111111ULL,
     RANK_2 = RANK_1 << UP,
@@ -91,14 +69,16 @@ enum Rank : Bitboard {
     RANK_8 = RANK_7 << UP
 };
 
-std::vector<Square> GetSquares(Bitboard bb) {
-    std::vector<Square> squares;
-    while (bb) {
-        squares.push_back(static_cast<Square>(std::countr_zero(bb)));
-        bb &= bb - 1;
-    }
-    return squares;
-}
+enum File : Bitboard {
+    FILE_A = 0x0101010101010101ULL,
+    FILE_B = FILE_A << 1,
+    FILE_C = FILE_A << 2,
+    FILE_D = FILE_A << 3,
+    FILE_E = FILE_A << 4,
+    FILE_F = FILE_A << 5,
+    FILE_G = FILE_A << 6,
+    FILE_H = FILE_A << 7
+};
 
 enum MoveType : uint16_t {
     NORMAL,
@@ -107,6 +87,92 @@ enum MoveType : uint16_t {
     EN_PASSANT = 2 << 14,
     CASTLING = 3 << 14
 };
+
+enum MoveMask : uint16_t {
+    FROM_MASK = 0b1111110000000000,
+    TO_MASK = 0b0000001111110000,
+};
+
+inline Square WhichSquare(uint8_t rank, uint8_t file) {
+    return (Square)(rank * 8 + file);
+}
+
+std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
+                                           {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
+std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
+                                          {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
+std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
+
+std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
+                                                      {UP, UP, RIGHT},
+                                                      {RIGHT, RIGHT, UP},
+                                                      {RIGHT, RIGHT, DOWN},
+                                                      {DOWN, DOWN, RIGHT},
+                                                      {DOWN, DOWN, LEFT},
+                                                      {LEFT, LEFT, DOWN},
+                                                      {LEFT, LEFT, UP}}};
+
+std::string SquareToString(Square sq) {
+    return std::string(1, FileLetters[sq % 8]) + std::to_string(sq / 8 + 1);
+}
+
+Bitboard SquareToBitboard(const Square square) {
+    return Bitboard(1) << square;
+}
+
+bool isWithinBounds(Bitboard position, Direction dir) {
+    if ((position & FILE_A) != 0) {
+        if (dir == LEFT || dir == UP_LEFT || dir == DOWN_LEFT) {
+            return false;
+        }
+    }
+    if ((position & FILE_H) != 0) {
+        if (dir == RIGHT || dir == UP_RIGHT || dir == DOWN_RIGHT) {
+            return false;
+        }
+    }
+    if ((position & RANK_8) != 0) {
+        if (dir == UP || dir == UP_LEFT || dir == UP_RIGHT) {
+            return false;
+        }
+    }
+    if ((position & RANK_1) != 0) {
+        if (dir == DOWN || dir == DOWN_LEFT || dir == DOWN_RIGHT) {
+            return false;
+        }
+    }
+    return true;
+}
+
+Bitboard MoveSquare(Bitboard bb, Direction dir) {
+    if (!isWithinBounds(bb, dir)) {
+        return bb;
+    }
+    if (dir > 0) {
+        return bb << dir;
+    }
+    return bb >> -dir;
+}
+
+Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs) {
+    Bitboard initial_bb = bb;
+    for (Direction dir : dirs) {
+        if (!isWithinBounds(bb, dir)) {
+            return initial_bb;
+        }
+        bb = MoveSquare(bb, dir);
+    }
+    return bb;
+}
+
+std::vector<Square> GetSquares(Bitboard bb) {
+    std::vector<Square> squares;
+    while (bb) {
+        squares.push_back(static_cast<Square>(std::countr_zero(bb)));
+        bb &= bb - 1;
+    }
+    return squares;
+}
 
 /*
 0-5  -- initial square
@@ -128,11 +194,6 @@ private:
     uint16_t description;
 };
 
-enum MoveMask : uint16_t {
-    FROM_MASK = 0b1111110000000000,
-    TO_MASK = 0b0000001111110000,
-};
-
 bool IsOccupied(Bitboard bb, Square sq);
 
 bool AvailableMove(Move move);
@@ -152,6 +213,7 @@ public:
 
     void MakeMove(Move cur_move);
     std::vector<Move> GenPawnMoves(const Color color);
+    std::vector<Move> GenKnightMoves(const Color color);
 
     void PrintBoard() const;
 

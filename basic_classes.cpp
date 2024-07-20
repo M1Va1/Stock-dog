@@ -159,17 +159,39 @@ std::vector<Move> ChessBoard::GenPawnMoves(const Color color) {
     return moves;
 }
 
-// int main() {
-//     ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPP4/RNBQKBNR");
-//     board.MakeMove({E1, E4});
-//     board.MakeMove({A2, A3});
-//     board.MakeMove({B2, B7});
-//     board.MakeMove({D2, D3});
+std::vector<Move> ChessBoard::GenKnightMoves(const Color color) {
+    std::vector<Move> moves;
+    Bitboard knights = GetPieces(color, KNIGHT);
+    Bitboard friendly_pieces = colors[color];
 
-//     auto moves = board.GenPawnMoves(WHITE);
-//     for (auto move : moves) {
-//         std::cout << SquareToString(move.GetFrom()) << ' ' << SquareToString(move.GetTo()) << '\n';
-//     }
+    for (Square from : GetSquares(knights)) {
+        Bitboard possible_moves = 0;
+        for (auto dir : KnightMoves) {
+            possible_moves |= MoveSquare(SquareToBitboard(from), dir);
+        }
+        possible_moves &= ~friendly_pieces;
+        for (Square to : GetSquares(possible_moves)) {
+            moves.push_back({from, to});
+        }
+    }
 
-//     board.PrintBoard();
-// }
+    return moves;
+}
+
+int main() {
+    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    board.MakeMove({E1, E4});
+    board.MakeMove({A2, A3});
+    board.MakeMove({B2, B7});
+    board.MakeMove({D2, D3});
+    board.MakeMove({G1, A8});
+    board.MakeMove({A1, B1});
+
+    auto moves = board.GenKnightMoves(WHITE);
+    std::cout << moves.size() << '\n';
+    for (auto move : moves) {
+        std::cout << SquareToString(move.GetFrom()) << ' ' << SquareToString(move.GetTo()) << '\n';
+    }
+
+    board.PrintBoard();
+}
