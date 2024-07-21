@@ -120,59 +120,13 @@ Bitboard SquareToBitboard(const Square square) {
     return Bitboard(1) << square;
 }
 
-bool isWithinBounds(Bitboard position, Direction dir) {
-    if ((position & FILE_A) != 0) {
-        if (dir == LEFT || dir == UP_LEFT || dir == DOWN_LEFT) {
-            return false;
-        }
-    }
-    if ((position & FILE_H) != 0) {
-        if (dir == RIGHT || dir == UP_RIGHT || dir == DOWN_RIGHT) {
-            return false;
-        }
-    }
-    if ((position & RANK_8) != 0) {
-        if (dir == UP || dir == UP_LEFT || dir == UP_RIGHT) {
-            return false;
-        }
-    }
-    if ((position & RANK_1) != 0) {
-        if (dir == DOWN || dir == DOWN_LEFT || dir == DOWN_RIGHT) {
-            return false;
-        }
-    }
-    return true;
-}
+bool IsWithinBounds(Bitboard position, Direction dir);
 
-Bitboard MoveSquare(Bitboard bb, Direction dir) {
-    if (!isWithinBounds(bb, dir)) {
-        return bb;
-    }
-    if (dir > 0) {
-        return bb << dir;
-    }
-    return bb >> -dir;
-}
+Bitboard MoveSquare(Bitboard bb, Direction dir);
 
-Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs) {
-    Bitboard initial_bb = bb;
-    for (Direction dir : dirs) {
-        if (!isWithinBounds(bb, dir)) {
-            return initial_bb;
-        }
-        bb = MoveSquare(bb, dir);
-    }
-    return bb;
-}
+Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs);
 
-std::vector<Square> GetSquares(Bitboard bb) {
-    std::vector<Square> squares;
-    while (bb) {
-        squares.push_back(static_cast<Square>(std::countr_zero(bb)));
-        bb &= bb - 1;
-    }
-    return squares;
-}
+std::vector<Square> GetSquares(Bitboard bb);
 
 /*
 0-5  -- initial square
@@ -181,7 +135,7 @@ std::vector<Square> GetSquares(Bitboard bb) {
 */
 class Move {
 public:
-    Move() : description(0) {};
+    Move() : description(0){};
     Move(Square from, Square to);
 
     void SetFrom(const Square from);
@@ -190,13 +144,19 @@ public:
     Square GetFrom() const;
     Square GetTo() const;
 
+    Move Inversed();
+
 private:
     uint16_t description;
 };
 
 bool IsOccupied(Bitboard bb, Square sq);
 
-bool AvailableMove(Move move);
+bool AvailableMove(Move move);  // НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО
+                                // СДЕЛАТЬ НАДО СДЕЛАТЬ
+
+std::vector<Move> GenLegalMoves(ChessBoard cur_board);  // НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО
+                                                            // СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ
 
 class ChessBoard {
 public:

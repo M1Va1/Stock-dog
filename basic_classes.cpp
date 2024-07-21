@@ -94,11 +94,18 @@ void ChessBoard::PrintBoard() const {
         }
     }
     for (int i = 7; i >= 0; --i) {
+        std::cout << i + 1 << "  ";
         for (int j = 0; j < 8; ++j) {
             std::cout << board[i][j] << ' ';
         }
         std::cout << '\n';
     }
+    std::cout << '\n';
+    std::cout << "   ";
+    for (int j = 0; j < 8; ++j) {
+        std::cout << static_cast<char>('A' + j) << ' ';
+    }
+    std::cout << '\n';
 }
 
 void Move::SetFrom(const Square from) {
@@ -124,74 +131,8 @@ Move::Move(Square from, Square to) {
     SetTo(to);
 }
 
-std::vector<Move> ChessBoard::GenPawnMoves(const Color color) {
-    std::vector<Move> moves;
-    Bitboard pawns = GetPieces(color, PAWN);
-    Bitboard empty_squares = GetEmptySquares();
-
-    Direction dir = (color == WHITE) ? UP : DOWN;
-    Rank reachable_rank = (color == WHITE) ? RANK_4 : RANK_5;
-
-    Bitboard first_push = MoveSquare(pawns, dir) & empty_squares;
-    for (Square to : GetSquares(first_push)) {
-        Square from = static_cast<Square>(to - dir);
-        moves.push_back({from, to});
-    }
-
-    Bitboard second_push = MoveSquare(first_push, dir) & empty_squares & reachable_rank;
-    for (Square to : GetSquares(second_push)) {
-        Square from = static_cast<Square>(to - 2 * dir);
-        moves.push_back({from, to});
-    }
-
-    Bitboard left_attacks = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & colors[!color];
-    for (Square to : GetSquares(left_attacks)) {
-        Square from = static_cast<Square>(to - dir - LEFT);
-        moves.push_back({from, to});
-    }
-
-    Bitboard right_attacks = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & colors[!color];
-    for (Square to : GetSquares(right_attacks)) {
-        Square from = static_cast<Square>(to - dir - RIGHT);
-        moves.push_back({from, to});
-    }
-
-    return moves;
+Move Move::Inversed() {
+    return Move(GetTo(), GetFrom());
 }
 
-std::vector<Move> ChessBoard::GenKnightMoves(const Color color) {
-    std::vector<Move> moves;
-    Bitboard knights = GetPieces(color, KNIGHT);
-    Bitboard friendly_pieces = colors[color];
 
-    for (Square from : GetSquares(knights)) {
-        Bitboard possible_moves = 0;
-        for (auto dir : KnightMoves) {
-            possible_moves |= MoveSquare(SquareToBitboard(from), dir);
-        }
-        possible_moves &= ~friendly_pieces;
-        for (Square to : GetSquares(possible_moves)) {
-            moves.push_back({from, to});
-        }
-    }
-
-    return moves;
-}
-
-int main() {
-    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    board.MakeMove({E1, E4});
-    board.MakeMove({A2, A3});
-    board.MakeMove({B2, B7});
-    board.MakeMove({D2, D3});
-    board.MakeMove({G1, A8});
-    board.MakeMove({A1, B1});
-
-    auto moves = board.GenKnightMoves(WHITE);
-    std::cout << moves.size() << '\n';
-    for (auto move : moves) {
-        std::cout << SquareToString(move.GetFrom()) << ' ' << SquareToString(move.GetTo()) << '\n';
-    }
-
-    board.PrintBoard();
-}
