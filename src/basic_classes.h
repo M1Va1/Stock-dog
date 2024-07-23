@@ -1,3 +1,5 @@
+#pragma once
+
 #include <array>
 #include <iostream>
 #include <map>
@@ -6,8 +8,9 @@
 
 using Bitboard = uint64_t;
 
-uint8_t FROM_BITS = 10;
-uint8_t TO_BITS = 4;
+
+constexpr uint8_t FROM_BITS = 10;
+constexpr uint8_t TO_BITS = 4;
 
 // clang-format off
 enum Square : uint16_t {
@@ -97,13 +100,13 @@ inline Square WhichSquare(uint8_t rank, uint8_t file) {
     return (Square)(rank * 8 + file);
 }
 
-std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
+inline std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
                                            {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
-std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
+inline std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
                                           {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
-std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
+inline std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
 
-std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
+inline std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
                                                       {UP, UP, RIGHT},
                                                       {RIGHT, RIGHT, UP},
                                                       {RIGHT, RIGHT, DOWN},
@@ -112,11 +115,11 @@ std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
                                                       {LEFT, LEFT, DOWN},
                                                       {LEFT, LEFT, UP}}};
 
-std::string SquareToString(Square sq) {
+inline std::string SquareToString(Square sq) {
     return std::string(1, FileLetters[sq % 8]) + std::to_string(sq / 8 + 1);
 }
 
-Bitboard SquareToBitboard(const Square square) {
+inline Bitboard SquareToBitboard(const Square square) {
     return Bitboard(1) << square;
 }
 
@@ -127,59 +130,3 @@ Bitboard MoveSquare(Bitboard bb, Direction dir);
 Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs);
 
 std::vector<Square> GetSquares(Bitboard bb);
-
-/*
-0-5  -- initial square
-6-11 -- destination square
-...  -- something in future
-*/
-class Move {
-public:
-    Move() : description(0){};
-    Move(Square from, Square to);
-
-    void SetFrom(const Square from);
-    void SetTo(const Square to);
-
-    Square GetFrom() const;
-    Square GetTo() const;
-
-    Move Inversed();
-
-private:
-    uint16_t description;
-};
-
-bool IsOccupied(Bitboard bb, Square sq);
-
-bool AvailableMove(Move move);  // НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО
-                                // СДЕЛАТЬ НАДО СДЕЛАТЬ
-
-std::vector<Move> GenLegalMoves(ChessBoard cur_board);  // НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО
-                                                            // СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ НАДО СДЕЛАТЬ
-
-class ChessBoard {
-public:
-    ChessBoard(std::string input);
-    ChessBoard();
-
-    void SetPiece(PieceType pt, Color c, Square square);
-    Piece RemovePiece(Square square);
-    Piece PieceOnSquare(Square sq);
-    Bitboard GetPieces(Color color, PieceType piece) const;
-    Bitboard GetEmptySquares() const {
-        return pieces[NONE];
-    };
-
-    void MakeMove(Move cur_move);
-    std::vector<Move> GenPawnMoves(const Color color);
-    std::vector<Move> GenKnightMoves(const Color color);
-
-    void PrintBoard() const;
-
-    ChessBoard& operator=(const ChessBoard& rhs) = default;
-
-private:
-    std::array<Bitboard, PIECE_NB> pieces;
-    std::array<Bitboard, COLOR_NB> colors;
-};

@@ -1,0 +1,3 @@
+/Users/poogee/Stockdoge/build/CMakeFiles/Stockdog.dir
+/Users/poogee/Stockdoge/build/CMakeFiles/edit_cache.dir
+/Users/poogee/Stockdoge/build/CMakeFiles/rebuild_cache.dir
