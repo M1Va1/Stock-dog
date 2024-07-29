@@ -3,11 +3,12 @@
 #include <array>
 #include <iostream>
 #include <map>
+#include <format>
 #include <string>
 #include <vector>
+#include <random>
 
 using Bitboard = uint64_t;
-
 
 constexpr uint8_t FROM_BITS = 10;
 constexpr uint8_t TO_BITS = 4;
@@ -22,6 +23,8 @@ enum Square : uint16_t {
     A6, B6, C6, D6, E6, F6, G6, H6,
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8, 
+
+    SQUARE_NB = 64
 };
 // clang-format on
 
@@ -101,22 +104,23 @@ inline Square WhichSquare(uint8_t rank, uint8_t file) {
 }
 
 inline std::map<char, PieceType> FenPieceCodes = {{'p', PAWN}, {'n', KNIGHT}, {'b', BISHOP},
-                                           {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
+                                                  {'r', ROOK}, {'q', QUEEN},  {'k', KING}};
 inline std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNIGHT, 'n'}, {BISHOP, 'b'},
-                                          {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
-inline std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'}, {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
+                                                 {ROOK, 'r'}, {QUEEN, 'q'}, {KING, 'k'}};
+inline std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'},
+                                          {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
 
 inline std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
-                                                      {UP, UP, RIGHT},
-                                                      {RIGHT, RIGHT, UP},
-                                                      {RIGHT, RIGHT, DOWN},
-                                                      {DOWN, DOWN, RIGHT},
-                                                      {DOWN, DOWN, LEFT},
-                                                      {LEFT, LEFT, DOWN},
-                                                      {LEFT, LEFT, UP}}};
+                                                             {UP, UP, RIGHT},
+                                                             {RIGHT, RIGHT, UP},
+                                                             {RIGHT, RIGHT, DOWN},
+                                                             {DOWN, DOWN, RIGHT},
+                                                             {DOWN, DOWN, LEFT},
+                                                             {LEFT, LEFT, DOWN},
+                                                             {LEFT, LEFT, UP}}};
 
 inline std::string SquareToString(Square sq) {
-    return std::string(1, FileLetters[sq % 8]) + std::to_string(sq / 8 + 1);
+    return std::format("{}{}", FileLetters[sq % 8], sq / 8 + 1);
 }
 
 inline Bitboard SquareToBitboard(const Square square) {
@@ -127,6 +131,9 @@ bool IsWithinBounds(Bitboard position, Direction dir);
 
 Bitboard MoveSquare(Bitboard bb, Direction dir);
 
-Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs);
+Bitboard MoveSquare(Bitboard bb, const std::vector<Direction> &dirs);
 
 std::vector<Square> GetSquares(Bitboard bb);
+
+Bitboard GenRandomBitboard();
+

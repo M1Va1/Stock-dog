@@ -34,7 +34,7 @@ Bitboard MoveSquare(Bitboard bb, Direction dir) {
     return bb >> -dir;
 }
 
-Bitboard MoveSquare(Bitboard bb, std::vector<Direction> dirs) {
+Bitboard MoveSquare(Bitboard bb, const std::vector<Direction> &dirs) {
     Bitboard initial_bb = bb;
     for (Direction dir : dirs) {
         if (!IsWithinBounds(bb, dir)) {
@@ -53,3 +53,13 @@ std::vector<Square> GetSquares(Bitboard bb) {
     }
     return squares;
 }
+
+Bitboard GenRandomBitboard() {
+    // https://stackoverflow.com/questions/5008804/generating-random-integer-from-a-range
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<Bitboard> dis(0, std::numeric_limits<Bitboard>::max());
+
+    return dis(gen);
+}
+

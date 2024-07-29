@@ -1,5 +1,7 @@
 #pragma once
 #include "basic_classes.h"
+#include "precomputed.h"
+#include "magic.h"
 /*
 0-5  -- initial square
 6-11 -- destination square
@@ -16,7 +18,8 @@ public:
     Square GetFrom() const;
     Square GetTo() const;
 
-    Move Inversed();
+    Move Inversed() const;
+    static void VisualizeMoves(std::vector<Move>& moves);
 
 private:
     uint16_t description;
@@ -26,7 +29,7 @@ bool IsOccupied(Bitboard bb, Square sq);
 
 class ChessBoard {
 public:
-    ChessBoard(std::string input);
+    ChessBoard(const std::string& input);
     ChessBoard();
 
     void SetPiece(PieceType pt, Color c, Square square);
@@ -38,14 +41,18 @@ public:
     };
 
     void MakeMove(Move cur_move);
-    std::vector<Move> GenPawnMoves(const Color color);
-    std::vector<Move> GenKnightMoves(const Color color);
+    void GenPawnMoves(const Color color);
+    void GenKnightMoves(const Color color);
+    void GenBishopMoves(const Color color, const MagicGenerator& magic_generator);
+    void GenRookMoves(const Color color, const MagicGenerator& magic_generator);
+    void GenQueenMoves(const Color color, const MagicGenerator& magic_generator);
 
     void PrintBoard() const;
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
 private:
+    std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
 };

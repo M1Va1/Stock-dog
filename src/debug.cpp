@@ -1,3 +1,4 @@
+#include "magic.h"
 #include "move_generation.h"
 
 // int64_t perft(int depth, ChessBoard board) {
@@ -20,19 +21,13 @@
 // }
 
 int main() {
-    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    board.MakeMove({E1, E4});
-    board.MakeMove({A2, A3});
-    board.MakeMove({B2, B7});
-    board.MakeMove({D2, D3});
-    board.MakeMove({G1, A8});
-    board.MakeMove({A1, B1});
+    ChessBoard b("r2qkbnr/pppppppp/8/8/4Q3/8/8/R2RK1NR");
+    b.PrintBoard();
+    MagicGenerator magic_gen;
+    std::cout << "===============================" << std::endl;
+    // magic_gen.PrintTables();
 
-    auto moves = board.GenKnightMoves(WHITE);
-    std::cout << moves.size() << '\n';
-    for (auto move : moves) {
-        std::cout << SquareToString(move.GetFrom()) << ' ' << SquareToString(move.GetTo()) << '\n';
-    }
-
-    board.PrintBoard();
+    return 0;
 }
+
+// todo: precompute magics

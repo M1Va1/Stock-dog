@@ -8,7 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SOURCES
     src/basic_classes.cpp
     src/move_generation.cpp
+    src/magic.cpp
     src/debug.cpp
+
 )
 
 add_executable(Stockdog ${SOURCES})
