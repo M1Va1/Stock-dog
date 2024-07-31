@@ -51,7 +51,7 @@ public:
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
-private:
+// private:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;

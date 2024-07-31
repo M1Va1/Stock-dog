@@ -43,9 +43,9 @@ Bitboard MagicGenerator::GenRookMoves(Square sq, Bitboard occupied) const {
         Bitboard bb = SquareToBitboard(sq);
         while (IsWithinBounds(bb, dir)) {
             bb = MoveSquare(bb, dir);
+            moves |= bb;
             if (occupied & bb)
                 break;
-            moves |= bb;
         }
     }
 
@@ -58,9 +58,9 @@ Bitboard MagicGenerator::GenBishopMoves(Square sq, Bitboard occupied) const {
         Bitboard bb = SquareToBitboard(sq);
         while (IsWithinBounds(bb, dir)) {
             bb = MoveSquare(bb, dir);
+            moves |= bb;
             if (occupied & bb)
                 break;
-            moves |= bb;
         }
     }
 
@@ -89,7 +89,7 @@ std::vector<Bitboard> MagicGenerator::GenBlockerMasks(Bitboard mask) const {
     return masks;
 }
 
-// For now it only searches for magic numbers popcount(mask) relevant bits
+// For now it only searches for magic numbers with popcount(mask) relevant bits
 Bitboard MagicGenerator::FindRookMagic(Square sq) {
     Bitboard mask = rook_masks[sq];
     std::vector<Bitboard> blocker_masks = GenBlockerMasks(mask);
@@ -114,8 +114,6 @@ Bitboard MagicGenerator::FindRookMagic(Square sq) {
         }
 
         if (!fail) {
-            // std::cout << "Found magic number for square " << SquareToString(sq) << " with " << 64 - bits_to_shift
-                    //   << " bits: " << magic_candidate << std::endl;
             rook_magics[sq] = magic_candidate;
             rook_shifts[sq] = bits_to_shift;
             rook_move_table[sq] = move_table;
@@ -125,10 +123,9 @@ Bitboard MagicGenerator::FindRookMagic(Square sq) {
 }
 
 Bitboard MagicGenerator::FindBishopMagic(Square sq) {
-    Bitboard mask = bishop_masks[static_cast<int>(sq)];
+    Bitboard mask = bishop_masks[sq];
     std::vector<Bitboard> blocker_masks = GenBlockerMasks(mask);
     int relevant_bits = std::popcount(mask);
-    // std::cout << "Relevant bits: " << relevant_bits << std::endl;
     int bits_to_shift = 64 - relevant_bits;
     while (true) {
         Bitboard magic_candidate = GenRandomBitboard() & GenRandomBitboard() & GenRandomBitboard();  //
@@ -136,7 +133,7 @@ Bitboard MagicGenerator::FindBishopMagic(Square sq) {
 
         bool fail = false;
         for (Bitboard blocker_mask : blocker_masks) {
-            uint16_t index = (blocker_mask * magic_candidate) >> bits_to_shift;
+            uint16_t index = static_cast<uint16_t>((blocker_mask * magic_candidate) >> bits_to_shift);
             Bitboard moves = GenBishopMoves(sq, blocker_mask);
 
             if (move_table[index] == 0) {
@@ -148,11 +145,10 @@ Bitboard MagicGenerator::FindBishopMagic(Square sq) {
         }
 
         if (!fail) {
-            // std::cout << "Found magic number for square " << SquareToString(sq) << " with " << 64 - bits_to_shift
-                    //   << " bits: " << magic_candidate << std::endl;
             bishop_magics[sq] = magic_candidate;
             bishop_shifts[sq] = bits_to_shift;
             bishop_move_table[sq] = move_table;
+
             return magic_candidate;
         }
     }
@@ -214,7 +210,7 @@ void MagicGenerator::PrintTables() const {
         Square sq = static_cast<Square>(i);
         std::cout << "{\n";
         for (auto rook_move : rook_move_table[sq]) {
-            std::cout << rook_move << "ULL, \n"; 
+            std::cout << rook_move << "ULL, \n";
         }
         std::cout << "},\n";
     }
@@ -224,7 +220,7 @@ void MagicGenerator::PrintTables() const {
         Square sq = static_cast<Square>(i);
         std::cout << "{\n";
         for (auto bishop_move : bishop_move_table[sq]) {
-            std::cout << bishop_move << "ULL, \n"; 
+            std::cout << bishop_move << "ULL, \n";
         }
         std::cout << "},\n";
     }

@@ -7,6 +7,7 @@ void VisualizeSquares(std::vector<Square> squares) {
     }
     b.PrintBoard();
 }
+
 void ChessBoard::SetPiece(const PieceType pt, const Color c, const Square square) {
     Bitboard bb = SquareToBitboard(square);
     pieces[pt] |= bb;
@@ -74,6 +75,7 @@ void Move::VisualizeMoves(std::vector<Move> &moves) {
 ChessBoard::ChessBoard() {
     colors.fill(0);
     pieces.fill(0);
+    moves.clear();
     pieces[NONE] = -1;
 }
 
@@ -202,7 +204,7 @@ void ChessBoard::GenBishopMoves(const Color color, const MagicGenerator &magic_g
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(bishops)) {
         Bitboard mask = bishop_masks[sq] & board;
-        uint16_t index = mask * magic_generator.bishop_magics[sq] >> (64 - bishop_shifts[sq]);
+        uint16_t index = (mask * magic_generator.bishop_magics[sq]) >> (magic_generator.bishop_shifts[sq]);
         std::vector<Square> bishop_moves = GetSquares(magic_generator.bishop_move_table[sq][index] & ~colors[color]);
         for (auto move : bishop_moves) {
             moves.push_back({sq, move});
@@ -215,7 +217,7 @@ void ChessBoard::GenRookMoves(const Color color, const MagicGenerator &magic_gen
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(rooks)) {
         Bitboard mask = rook_masks[sq] & board;
-        uint16_t index = mask * magic_generator.rook_magics[sq] >> (64 - rook_shifts[sq]);
+        uint16_t index = mask * magic_generator.rook_magics[sq] >> (magic_generator.rook_shifts[sq]);
         std::vector<Square> rook_moves = GetSquares(magic_generator.rook_move_table[sq][index] & ~colors[color]);
         for (auto move : rook_moves) {
             moves.push_back({sq, move});
@@ -225,26 +227,20 @@ void ChessBoard::GenRookMoves(const Color color, const MagicGenerator &magic_gen
 
 void ChessBoard::GenQueenMoves(const Color color, const MagicGenerator &magic_generator) {
     Bitboard queens = GetPieces(color, QUEEN);
-    Bitboard board = GetEmptySquares();
+    Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(queens)) {
-        Bitboard rook_mask = rook_masks[sq] & board;
-        uint16_t rook_index = rook_mask * magic_generator.rook_magics[sq] >> (64 - rook_shifts[sq]);
-        std::vector<Square> rook_moves = GetSquares(magic_generator.rook_move_table[sq][rook_index] & ~colors[color]);
-        VisualizeSquares(GetSquares(rook_masks[sq]));
-        VisualizeSquares(GetSquares(rook_mask));
-        VisualizeSquares(rook_moves);
-
-        for (auto move : rook_moves) {
+        Bitboard mask = bishop_masks[sq] & board;
+        uint16_t index = (mask * magic_generator.bishop_magics[sq]) >> (magic_generator.bishop_shifts[sq]);
+        std::vector<Square> bishop_moves = GetSquares(magic_generator.bishop_move_table[sq][index] & ~colors[color]);
+        for (auto move : bishop_moves) {
             moves.push_back({sq, move});
         }
-        Bitboard mask = bishop_masks[sq] & board;
-        VisualizeSquares(GetSquares(bishop_masks[sq]));
-        VisualizeSquares(GetSquares(mask));
-        uint16_t index = mask * magic_generator.bishop_magics[sq] >> (64 - bishop_shifts[sq]);
-        std::vector<Square> bishop_moves = GetSquares(magic_generator.bishop_move_table[sq][index] & ~colors[color]);
-        VisualizeSquares(bishop_moves);
-
-        for (auto move : bishop_moves) {
+    }
+    for (auto sq : GetSquares(queens)) {
+        Bitboard mask = rook_masks[sq] & board;
+        uint16_t index = mask * magic_generator.rook_magics[sq] >> (magic_generator.rook_shifts[sq]);
+        std::vector<Square> rook_moves = GetSquares(magic_generator.rook_move_table[sq][index] & ~colors[color]);
+        for (auto move : rook_moves) {
             moves.push_back({sq, move});
         }
     }

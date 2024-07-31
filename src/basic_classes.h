@@ -137,3 +137,5 @@ std::vector<Square> GetSquares(Bitboard bb);
 
 Bitboard GenRandomBitboard();
 
+
+
