@@ -64,7 +64,7 @@ ChessBoard FenEncoder(std::string input) {
     }
     return new_chessboard;
 }
-void Move::VisualizeMoves(std::vector<Move> &moves) {
+void Move::VisualizeMoves(const std::vector<Move> &moves) {
     ChessBoard b;
     for (auto move : moves) {
         b.SetPiece(PAWN, WHITE, move.GetTo());

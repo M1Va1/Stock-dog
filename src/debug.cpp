@@ -28,6 +28,7 @@ int main() {
     // magic_gen.PrintTables();
     b.GenQueenMoves(WHITE, magic_gen);
     Move::VisualizeMoves(b.moves);
+    // magic_gen.PrintMagics();
     return 0;
 }
 

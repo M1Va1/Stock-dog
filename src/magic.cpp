@@ -89,7 +89,6 @@ std::vector<Bitboard> MagicGenerator::GenBlockerMasks(Bitboard mask) const {
     return masks;
 }
 
-// For now it only searches for magic numbers with popcount(mask) relevant bits
 Bitboard MagicGenerator::FindRookMagic(Square sq) {
     Bitboard mask = rook_masks[sq];
     std::vector<Bitboard> blocker_masks = GenBlockerMasks(mask);
@@ -133,7 +132,7 @@ Bitboard MagicGenerator::FindBishopMagic(Square sq) {
 
         bool fail = false;
         for (Bitboard blocker_mask : blocker_masks) {
-            uint16_t index = static_cast<uint16_t>((blocker_mask * magic_candidate) >> bits_to_shift);
+            uint16_t index = (blocker_mask * magic_candidate) >> bits_to_shift;
             Bitboard moves = GenBishopMoves(sq, blocker_mask);
 
             if (move_table[index] == 0) {

@@ -2,27 +2,27 @@
 #include "basic_classes.h"
 #include "precomputed.h"
 #include "magic.h"
-/*
-0-5  -- initial square
-6-11 -- destination square
-...  -- something in future
-*/
+
 class Move {
 public:
-    Move() : description(0) {};
     Move(Square from, Square to);
 
-    void SetFrom(const Square from);
-    void SetTo(const Square to);
+    void SetFrom(Square from);
+    void SetTo(Square to);
 
     Square GetFrom() const;
     Square GetTo() const;
 
     Move Inversed() const;
-    static void VisualizeMoves(std::vector<Move>& moves);
+    static void VisualizeMoves(const std::vector<Move>& moves);
 
 private:
-    uint16_t description;
+    uint16_t description = 0;
+    /*
+    0-5  -- initial square
+    6-11 -- destination square
+    ...  -- something in future
+    */
 };
 
 bool IsOccupied(Bitboard bb, Square sq);
@@ -41,17 +41,17 @@ public:
     };
 
     void MakeMove(Move cur_move);
-    void GenPawnMoves(const Color color);
-    void GenKnightMoves(const Color color);
-    void GenBishopMoves(const Color color, const MagicGenerator& magic_generator);
-    void GenRookMoves(const Color color, const MagicGenerator& magic_generator);
-    void GenQueenMoves(const Color color, const MagicGenerator& magic_generator);
+    void GenPawnMoves(Color color);
+    void GenKnightMoves(Color color);
+    void GenBishopMoves(Color color, const MagicGenerator& magic_generator);
+    void GenRookMoves(Color color, const MagicGenerator& magic_generator);
+    void GenQueenMoves(Color color, const MagicGenerator& magic_generator);
 
     void PrintBoard() const;
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
-// private:
+    // private:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
