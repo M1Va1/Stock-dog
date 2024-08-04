@@ -1,5 +1,4 @@
-#include "magic.h"
-#include "move_generation.h"
+#include "debug.h"
 
 // int64_t perft(int depth, ChessBoard board) {
 //     if (depth == 0)
@@ -20,16 +19,18 @@
 //     }
 // }
 
-int main() {
-    ChessBoard b("r2qkbnr/pppppppp/pppppppp/4b3/4Q3/8/8/R2RK1NR");
+void VisualizeMoves(const std::vector<Move>& moves) {
+    ChessBoard b;
+    for (auto move : moves) {
+        b.SetPiece(PAWN, WHITE, move.GetTo());
+    }
     b.PrintBoard();
-    MagicGenerator magic_gen;
-    std::cout << "===============================" << std::endl;
-    // magic_gen.PrintTables();
-    b.GenQueenMoves(WHITE, magic_gen);
-    Move::VisualizeMoves(b.moves);
-    // magic_gen.PrintMagics();
-    return 0;
 }
 
-// todo: precompute magics
+void VisualizeSquares(std::vector<Square> squares) {
+    ChessBoard b;
+    for (auto sq : squares) {
+        b.SetPiece(PAWN, WHITE, sq);
+    }
+    b.PrintBoard();
+}

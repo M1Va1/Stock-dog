@@ -110,14 +110,14 @@ inline std::map<PieceType, char> PieceLetters = {{NONE, '.'}, {PAWN, 'p'},  {KNI
 inline std::map<int, char> FileLetters = {{0, 'A'}, {1, 'B'}, {2, 'C'}, {3, 'D'},
                                           {4, 'E'}, {5, 'F'}, {6, 'G'}, {7, 'H'}};
 
-inline std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
-                                                             {UP, UP, RIGHT},
-                                                             {RIGHT, RIGHT, UP},
-                                                             {RIGHT, RIGHT, DOWN},
-                                                             {DOWN, DOWN, RIGHT},
-                                                             {DOWN, DOWN, LEFT},
-                                                             {LEFT, LEFT, DOWN},
-                                                             {LEFT, LEFT, UP}}};
+const std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
+                                                            {UP, UP, RIGHT},
+                                                            {RIGHT, RIGHT, UP},
+                                                            {RIGHT, RIGHT, DOWN},
+                                                            {DOWN, DOWN, RIGHT},
+                                                            {DOWN, DOWN, LEFT},
+                                                            {LEFT, LEFT, DOWN},
+                                                            {LEFT, LEFT, UP}}};
 
 inline std::string SquareToString(Square sq) {
     return std::format("{}{}", FileLetters[sq % 8], sq / 8 + 1);
@@ -129,13 +129,12 @@ inline Bitboard SquareToBitboard(const Square square) {
 
 bool IsWithinBounds(Bitboard position, Direction dir);
 
-Bitboard MoveSquare(Bitboard bb, Direction dir);
-
-Bitboard MoveSquare(Bitboard bb, const std::vector<Direction> &dirs);
-
 std::vector<Square> GetSquares(Bitboard bb);
 
 Bitboard GenRandomBitboard();
 
-
-
+Bitboard MoveSquare(Bitboard bb, Direction dir);
+Bitboard MoveSquare(Bitboard bb, const std::vector<Direction> &dirs);
+Square MoveSquare(Square sq, int dir);
+Square MoveSquare(Square sq, Direction dir);
+Square MoveSquare(Square sq, std::vector<Direction> &dir);

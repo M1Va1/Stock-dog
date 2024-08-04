@@ -9,8 +9,9 @@ set(SOURCES
     src/basic_classes.cpp
     src/move_generation.cpp
     src/magic.cpp
+    src/move.cpp
     src/debug.cpp
-
+    src/main.cpp
 )
 
 add_executable(Stockdog ${SOURCES})

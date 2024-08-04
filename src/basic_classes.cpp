@@ -24,6 +24,24 @@ bool IsWithinBounds(Bitboard position, Direction dir) {
     return true;
 }
 
+Square MoveSquare(Square sq, int dir) {
+    return static_cast<Square>(sq + dir);
+}
+
+Square MoveSquare(Square sq, Direction dir) {
+    if (!IsWithinBounds(sq, dir))
+        std::cerr << "MoveSquare: " << sq << " with: " << dir << " is out of bounds\n";
+
+    return static_cast<Square>(sq + dir);
+}
+
+Square MoveSquare(Square sq, const std::vector<Direction> &dir) {
+    for (Direction d : dir)
+        sq = MoveSquare(sq, d);
+
+    return sq;
+}
+
 Bitboard MoveSquare(Bitboard bb, Direction dir) {
     if (!IsWithinBounds(bb, dir)) {
         return bb;
@@ -62,4 +80,3 @@ Bitboard GenRandomBitboard() {
 
     return dis(gen);
 }
-

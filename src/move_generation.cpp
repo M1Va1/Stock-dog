@@ -1,13 +1,5 @@
 #include "move_generation.h"
 
-void VisualizeSquares(std::vector<Square> squares) {
-    ChessBoard b;
-    for (auto sq : squares) {
-        b.SetPiece(PAWN, WHITE, sq);
-    }
-    b.PrintBoard();
-}
-
 void ChessBoard::SetPiece(const PieceType pt, const Color c, const Square square) {
     Bitboard bb = SquareToBitboard(square);
     pieces[pt] |= bb;
@@ -64,13 +56,6 @@ ChessBoard FenEncoder(std::string input) {
     }
     return new_chessboard;
 }
-void Move::VisualizeMoves(const std::vector<Move> &moves) {
-    ChessBoard b;
-    for (auto move : moves) {
-        b.SetPiece(PAWN, WHITE, move.GetTo());
-    }
-    b.PrintBoard();
-}
 
 ChessBoard::ChessBoard() {
     colors.fill(0);
@@ -124,33 +109,6 @@ void ChessBoard::PrintBoard() const {
     std::cout << '\n';
 }
 
-void Move::SetFrom(const Square from) {
-    description &= ~FROM_MASK;
-    description |= (from << FROM_BITS);
-}
-
-void Move::SetTo(const Square to) {
-    description &= ~TO_MASK;
-    description |= (to << TO_BITS);
-}
-
-Square Move::GetFrom() const {
-    return static_cast<Square>((description & FROM_MASK) >> FROM_BITS);
-}
-
-Square Move::GetTo() const {
-    return static_cast<Square>((description & TO_MASK) >> TO_BITS);
-}
-
-Move::Move(Square from, Square to) {
-    SetFrom(from);
-    SetTo(to);
-}
-
-Move Move::Inversed() const {
-    return Move(GetTo(), GetFrom());
-}
-
 void ChessBoard::GenPawnMoves(const Color color) {
     Bitboard pawns = GetPieces(color, PAWN);
     Bitboard empty_squares = GetEmptySquares();
@@ -160,25 +118,25 @@ void ChessBoard::GenPawnMoves(const Color color) {
 
     Bitboard first_push = MoveSquare(pawns, dir) & empty_squares;
     for (Square to : GetSquares(first_push)) {
-        Square from = static_cast<Square>(to - dir);
+        Square from = MoveSquare(to, -dir);
         moves.push_back({from, to});
     }
 
     Bitboard second_push = MoveSquare(first_push, dir) & empty_squares & reachable_rank;
     for (Square to : GetSquares(second_push)) {
-        Square from = static_cast<Square>(to - 2 * dir);
+        Square from = MoveSquare(to, -2 * dir);
         moves.push_back({from, to});
     }
 
     Bitboard left_attacks = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & colors[!color];
     for (Square to : GetSquares(left_attacks)) {
-        Square from = static_cast<Square>(to - dir - LEFT);
+        Square from = MoveSquare(to, -dir - LEFT);
         moves.push_back({from, to});
     }
 
     Bitboard right_attacks = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & colors[!color];
     for (Square to : GetSquares(right_attacks)) {
-        Square from = static_cast<Square>(to - dir - RIGHT);
+        Square from = MoveSquare(to, -dir - RIGHT);
         moves.push_back({from, to});
     }
 }
