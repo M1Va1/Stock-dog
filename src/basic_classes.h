@@ -10,8 +10,7 @@
 
 using Bitboard = uint64_t;
 
-constexpr uint8_t FROM_BITS = 10;
-constexpr uint8_t TO_BITS = 4;
+enum MoveShifts : uint8_t { FROM_BITS = 10, TO_BITS = 4, TYPE_BITS = 12, PIECE_TYPE_DELTA = 2, PROMO_PIECE_BITS = 14};
 
 // clang-format off
 enum Square : uint16_t {
@@ -84,14 +83,6 @@ enum File : Bitboard {
     FILE_F = FILE_A << 5,
     FILE_G = FILE_A << 6,
     FILE_H = FILE_A << 7
-};
-
-enum MoveType : uint16_t {
-    NORMAL,
-
-    PROMOTION = 1 << 14,
-    EN_PASSANT = 2 << 14,
-    CASTLING = 3 << 14
 };
 
 enum MoveMask : uint16_t {
