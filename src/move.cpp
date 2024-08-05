@@ -26,4 +26,3 @@ Move::Move(Square from, Square to) {
 Move Move::Inversed() const {
     return Move(GetTo(), GetFrom());
 }
-

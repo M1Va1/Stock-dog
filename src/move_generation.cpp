@@ -209,7 +209,7 @@ void ChessBoard::GenKingMoves(Color color) {
     Bitboard move_table = 0;
     Square sq = GetSquares(kings)[0];
     for (Direction dir : {UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
-        move_table |= (kings << dir);
+        move_table |= SquareToBitboard(MoveSquare(sq, dir));
     }
     std::vector<Square> king_moves = GetSquares(move_table & ~colors[color]);
     for (auto move : king_moves) {
