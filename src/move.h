@@ -12,7 +12,7 @@ public:
     Square GetTo() const;
 
     Move Inversed() const;
-
+    Move Suck_cock() const;
 private:
     uint16_t description = 0;
     /*
