@@ -203,3 +203,30 @@ void ChessBoard::GenQueenMoves(const Color color, const MagicGenerator &magic_ge
         }
     }
 }
+
+void ChessBoard::GenKingMoves(Color color) {
+    Bitboard kings = GetPieces(color, KING);
+    Bitboard move_table = 0;
+    Square sq = GetSquares(kings)[0];
+    for (Direction dir : {UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
+        move_table |= (kings << dir);
+    }
+    std::vector<Square> king_moves = GetSquares(move_table & ~colors[color]);
+    for (auto move : king_moves) {
+        moves.push_back({sq, move});
+    }
+}
+
+void ChessBoard::ClearMoves() {
+    moves.clear();
+}
+
+void ChessBoard::GenAllMoves(const Color color, const MagicGenerator &magic_generator) {
+    ClearMoves();
+    GenPawnMoves(color);
+    GenKnightMoves(color);
+    GenBishopMoves(color, magic_generator);
+    GenRookMoves(color, magic_generator);
+    GenQueenMoves(color, magic_generator);
+    GenKingMoves(color);
+}

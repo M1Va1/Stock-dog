@@ -12,6 +12,7 @@ public:
     Square GetTo() const;
 
     Move Inversed() const;
+
 private:
     uint16_t description = 0;
     /*

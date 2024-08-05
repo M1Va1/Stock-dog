@@ -25,6 +25,9 @@ public:
     void GenBishopMoves(Color color, const MagicGenerator& magic_generator);
     void GenRookMoves(Color color, const MagicGenerator& magic_generator);
     void GenQueenMoves(Color color, const MagicGenerator& magic_generator);
+    void GenKingMoves(Color color);
+    void ClearMoves();
+    void GenAllMoves(Color color, const MagicGenerator& magic_generator);
 
     void PrintBoard() const;
 
@@ -33,9 +36,10 @@ public:
     // private:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
+    std::array<Bitboard, COLOR_NB> second_pushes;
     std::array<Bitboard, COLOR_NB> colors;
 };
 
 bool AvailableMove(Move move);
 
-std::vector<Move> GenLegalMoves(ChessBoard cur_board); 
+// std::vector<Move> GenLegalMoves(ChessBoard cur_board);
