@@ -229,3 +229,57 @@ MagicGenerator::MagicGenerator() {
     FillMasks();
     FillMagics();
 }
+
+void MagicGenerator::SaveTables(const std::string& rookFilename, const std::string& bishopFilename) const {
+    std::ofstream rookFile(rookFilename, std::ios::binary);
+    if (!rookFile) {
+        std::cerr << "Error opening file for writing: " << rookFilename << "\n";
+        return;
+    }
+
+    for (const auto& table : rook_move_table) {
+        size_t size = table.size();
+        rookFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        rookFile.write(reinterpret_cast<const char*>(table.data()), size * sizeof(Bitboard));
+    }
+
+    std::ofstream bishopFile(bishopFilename, std::ios::binary);
+    if (!bishopFile) {
+        std::cerr << "Error opening file for writing: " << bishopFilename << "\n";
+        return;
+    }
+
+    for (const auto& table : bishop_move_table) {
+        size_t size = table.size();
+        bishopFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        bishopFile.write(reinterpret_cast<const char*>(table.data()), size * sizeof(Bitboard));
+    }
+}
+
+void MagicGenerator::LoadTables(const std::string& rookFilename, const std::string& bishopFilename) {
+    std::ifstream rookFile(rookFilename, std::ios::binary);
+    if (!rookFile) {
+        std::cerr << "Error opening file for reading: " << rookFilename << "\n";
+        return;
+    }
+
+    for (auto& table : rook_move_table) {
+        size_t size;
+        rookFile.read(reinterpret_cast<char*>(&size), sizeof(size));
+        table.resize(size);
+        rookFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
+    }
+
+    std::ifstream bishopFile(bishopFilename, std::ios::binary);
+    if (!bishopFile) {
+        std::cerr << "Error opening file for reading: " << bishopFilename << "\n";
+        return;
+    }
+
+    for (auto& table : bishop_move_table) {
+        size_t size;
+        bishopFile.read(reinterpret_cast<char*>(&size), sizeof(size));
+        table.resize(size);
+        bishopFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
+    }
+}

@@ -3,13 +3,12 @@
 #include "debug.h"
 
 int main() {
-    ChessBoard b("r2qkbnr/pppppppp/pppppppp/4b3/4Q3/8/8/R2RK1NR");
-    b.PrintBoard();
-    MagicGenerator magic_gen;
-    std::cout << "===============================" << std::endl;
-    // magic_gen.PrintTables();
-    b.GenQueenMoves(WHITE, magic_gen);
-    VisualizeMoves(b.moves);
-    // magic_gen.PrintMagics();
+    MagicGenerator mg;
+    mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");
+    mg.rook_move_table = {};
+    mg.bishop_move_table = {};
+
+    mg.LoadTables("rook_move_table.dat", "bishop_move_table.dat");
+    mg.PrintTables();
     return 0;
 }
