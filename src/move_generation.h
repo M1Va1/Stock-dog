@@ -18,6 +18,7 @@ public:
     Bitboard GetEmptySquares() const {
         return pieces[NONE];
     };
+    Bitboard MoveToFriendSide(Bitboard bb);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -27,17 +28,22 @@ public:
     void GenQueenMoves(Color color, const MagicGenerator& magic_generator);
     void GenKingMoves(Color color);
     void ClearMoves();
+    void GenPromotions(Square from, Square to);
     void GenAllMoves(Color color, const MagicGenerator& magic_generator);
 
     void PrintBoard() const;
+
+    bool IsDoublePush(Move move);
+    bool IsEnPassant(Move move);
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
     // private:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
-    std::array<Bitboard, COLOR_NB> second_pushes;
     std::array<Bitboard, COLOR_NB> colors;
+
+    Move last_move;
 };
 
 bool AvailableMove(Move move);

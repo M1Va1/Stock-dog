@@ -11,14 +11,18 @@ enum MoveType : uint16_t {
 
 class Move {
 public:
+    Move() = default;
     Move(Square from, Square to);
+    Move(Square from, Square to, MoveType type);
+    Move(Square from, Square to, MoveType type, PieceType promo_piece);
 
     void SetFrom(Square from);
     void SetTo(Square to);
-    void SetType(MoveType type, PieceType promo_piece = NONE);
+    void SetType(MoveType type, PieceType promo_piece);
+    void SetType(MoveType type);
 
     MoveType GetType() const;
-    PieceType GetPromoPiece() const;
+    PieceType GetPromoPieceType() const;
     Square GetFrom() const;
     Square GetTo() const;
 

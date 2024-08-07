@@ -10,7 +10,7 @@
 
 using Bitboard = uint64_t;
 
-enum MoveShifts : uint8_t { FROM_BITS = 10, TO_BITS = 4, TYPE_BITS = 12, PIECE_TYPE_DELTA = 2, PROMO_PIECE_BITS = 14};
+enum MoveShifts : uint8_t { FROM_BITS = 0, TO_BITS = 6, TYPE_BITS = 12, PIECE_TYPE_DELTA = 2, PROMO_PIECE_BITS = 14};
 
 // clang-format off
 enum Square : uint16_t {
@@ -86,8 +86,9 @@ enum File : Bitboard {
 };
 
 enum MoveMask : uint16_t {
-    FROM_MASK = 0b1111110000000000,
-    TO_MASK = 0b0000001111110000,
+    FROM_MASK = 0b1111110000111111,
+    TO_MASK   = 0b0000111111000000,
+    TYPE_MASK = 0b0011000000000000,
 };
 
 inline Square WhichSquare(uint8_t rank, uint8_t file) {
@@ -120,7 +121,10 @@ inline Bitboard SquareToBitboard(const Square square) {
 
 bool IsWithinBounds(Bitboard position, Direction dir);
 
+
+Direction GetDir(Square from, Square to);
 std::vector<Square> GetSquares(Bitboard bb);
+Square GetFirstSquare(Bitboard bb);
 
 Bitboard GenRandomBitboard();
 

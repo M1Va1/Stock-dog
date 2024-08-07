@@ -24,6 +24,10 @@ bool IsWithinBounds(Bitboard position, Direction dir) {
     return true;
 }
 
+Direction GetDir(Square from, Square to) {
+    return static_cast<Direction>(from - to);
+}
+
 Square MoveSquare(Square sq, int dir) {
     return static_cast<Square>(sq + dir);
 }
@@ -70,6 +74,10 @@ std::vector<Square> GetSquares(Bitboard bb) {
         bb &= bb - 1;
     }
     return squares;
+}
+
+Square GetFirstSquare(Bitboard bb) {
+    return static_cast<Square>(std::countr_zero(bb));
 }
 
 Bitboard GenRandomBitboard() {

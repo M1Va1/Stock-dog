@@ -10,15 +10,21 @@ void Move::SetTo(const Square to) {
     description |= (to << TO_BITS);
 }
 
-void Move::SetType(MoveType type, PieceType promo_piece = NONE) {
+void Move::SetType(MoveType type, PieceType promo_piece) {
+    description &= ~TYPE_MASK;
     description &= (type << TYPE_BITS);
-    description &= ((promo_piece - PIECE_TYPE_DELTA) << PROMO_PIECE_BITS);
+    description |= ((promo_piece - PIECE_TYPE_DELTA) << PROMO_PIECE_BITS);
+}
+
+void Move::SetType(MoveType type) {
+    description &= ~TYPE_MASK;
+    description |= (type << TYPE_BITS);
 }
 
 MoveType Move::GetType() const {
     return static_cast<MoveType>(description >> TYPE_BITS);
 }
-PieceType Move::GetPromoPiece() const {
+PieceType Move::GetPromoPieceType() const {
     return static_cast<PieceType>((description >> PROMO_PIECE_BITS) + PROMO_PIECE_BITS);
 }
 
@@ -33,6 +39,18 @@ Square Move::GetTo() const {
 Move::Move(Square from, Square to) {
     SetFrom(from);
     SetTo(to);
+}
+
+Move::Move(Square from, Square to, MoveType type) {
+    SetFrom(from);
+    SetTo(to);
+    SetType(type);
+}
+
+Move::Move(Square from, Square to, MoveType type, PieceType promo_piece) {
+    SetFrom(from);
+    SetTo(to);
+    SetType(type, promo_piece);
 }
 
 Move Move::Inversed() const {

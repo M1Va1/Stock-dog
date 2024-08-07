@@ -31,9 +31,20 @@ Piece ChessBoard::PieceOnSquare(const Square sq) {
 };
 
 void ChessBoard::MakeMove(const Move cur_move) {
-    Piece buff = RemovePiece(cur_move.GetFrom());
-    RemovePiece(cur_move.GetTo());
-    SetPiece(buff.type, buff.color, cur_move.GetTo());
+    if (cur_move.GetType() == NORMAL || cur_move.GetType() == EN_PASSANT) {
+        Piece buff = RemovePiece(cur_move.GetFrom());
+        RemovePiece(cur_move.GetTo());
+        SetPiece(buff.type, buff.color, cur_move.GetTo());
+        if (cur_move.GetType() == EN_PASSANT) {
+            RemovePiece(GetFirstSquare(MoveToFriendSide(cur_move.GetTo())));
+        }
+    } else if (cur_move.GetType() == PROMOTION) {
+        Piece buff = RemovePiece(cur_move.GetFrom());
+        RemovePiece(cur_move.GetTo());
+        SetPiece(cur_move.GetPromoPieceType(), buff.color, cur_move.GetTo());
+    } else {  // CASTLING
+        ;
+    }
 }
 
 ChessBoard FenEncoder(std::string input) {
@@ -109,9 +120,31 @@ void ChessBoard::PrintBoard() const {
     std::cout << '\n';
 }
 
+bool ChessBoard::IsDoublePush(Move move) {
+    if (PieceOnSquare(move.GetFrom()).type == PAWN && abs(move.GetFrom() - move.GetTo()) == 2 * UP) {
+        return true;
+    }
+    return false;
+}
+
+Bitboard ChessBoard::MoveToFriendSide(Bitboard bb) {
+    if (PieceOnSquare(GetFirstSquare(bb)).color == WHITE)
+        bb = MoveSquare(bb, DOWN);
+    else
+        bb = MoveSquare(bb, UP);
+    return bb;
+}
+
+void ChessBoard::GenPromotions(Square from, Square to) {
+    for (PieceType available_type : {KNIGHT, BISHOP, ROOK, QUEEN}) {
+        moves.push_back({from, to, PROMOTION, available_type});
+    }
+}
+
 void ChessBoard::GenPawnMoves(const Color color) {
     Bitboard pawns = GetPieces(color, PAWN);
     Bitboard empty_squares = GetEmptySquares();
+    Bitboard DoublePushes = (IsDoublePush(last_move) ? SquareToBitboard(last_move.GetTo()) : 0);
 
     Direction dir = (color == WHITE) ? UP : DOWN;
     Rank reachable_rank = (color == WHITE) ? RANK_4 : RANK_5;
@@ -119,7 +152,11 @@ void ChessBoard::GenPawnMoves(const Color color) {
     Bitboard first_push = MoveSquare(pawns, dir) & empty_squares;
     for (Square to : GetSquares(first_push)) {
         Square from = MoveSquare(to, -dir);
-        moves.push_back({from, to});
+        if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
+            GenPromotions(from, to);
+        } else {
+            moves.push_back({from, to});
+        }
     }
 
     Bitboard second_push = MoveSquare(first_push, dir) & empty_squares & reachable_rank;
@@ -131,13 +168,36 @@ void ChessBoard::GenPawnMoves(const Color color) {
     Bitboard left_attacks = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & colors[!color];
     for (Square to : GetSquares(left_attacks)) {
         Square from = MoveSquare(to, -dir - LEFT);
-        moves.push_back({from, to});
+        if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
+            GenPromotions(from, to);
+        } else {
+            moves.push_back({from, to});
+        }
     }
 
     Bitboard right_attacks = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & colors[!color];
     for (Square to : GetSquares(right_attacks)) {
         Square from = MoveSquare(to, -dir - RIGHT);
-        moves.push_back({from, to});
+        if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
+            GenPromotions(from, to);
+        } else {
+            moves.push_back({from, to});
+        }
+    }
+
+    Bitboard left_en_passant =
+        MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & MoveToFriendSide(DoublePushes & colors[!color]);
+    if (left_en_passant) {
+        Square to = GetFirstSquare(left_en_passant);
+        Square from = MoveSquare(to, -dir - LEFT);
+        moves.push_back({from, to, EN_PASSANT});
+    }
+    Bitboard right_en_passant =
+        MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & MoveToFriendSide(DoublePushes & colors[!color]);
+    if (right_en_passant) {
+        Square to = GetFirstSquare(right_en_passant);
+        Square from = MoveSquare(to, -dir - RIGHT);
+        moves.push_back({from, to, EN_PASSANT});
     }
 }
 
