@@ -30,6 +30,7 @@ Bitboard MagicGenerator::GenBishopMask(Square sq) const {
     return mask;
 }
 
+
 void MagicGenerator::FillMasks() {
     for (int sq = 0; sq < SQUARE_NB; ++sq) {
         rook_masks[sq] = GenRookMask(static_cast<Square>(sq));
@@ -281,5 +282,23 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
         bishopFile.read(reinterpret_cast<char*>(&size), sizeof(size));
         table.resize(size);
         bishopFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
+    }
+}
+
+Bitboard MagicGenerator::CalcMoveTable(Square sq, Bitboard block_board, PieceType pt) const {
+    if (pt == BISHOP) {
+        Bitboard mask = bishop_masks[sq] & block_board;
+        uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
+        return bishop_move_table[sq][index];
+    } else if (pt == ROOK) {
+        Bitboard mask = rook_masks[sq] & block_board;
+        uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
+        return rook_move_table[sq][index];
+    } else {
+        Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
+        Bitboard mask_of_rook = rook_masks[sq] & block_board;
+        uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
+        uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
+        return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
     }
 }

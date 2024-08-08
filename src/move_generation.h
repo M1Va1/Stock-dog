@@ -6,6 +6,9 @@
 
 bool IsOccupied(Bitboard bb, Square sq);
 
+void PrintKnightMasks();
+void PrintKingMask();
+
 class ChessBoard {
 public:
     ChessBoard(const std::string& input);
@@ -19,6 +22,7 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
+    Bitboard CalcNewAttackMap(Move move);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -34,7 +38,7 @@ public:
     void PrintBoard() const;
 
     bool IsDoublePush(Move move);
-    bool IsEnPassant(Move move);
+    bool IsInCheck(Color color, const MagicGenerator &magic_generator);
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
@@ -42,6 +46,7 @@ public:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
+    Bitboard AttackMap;
 
     Move last_move;
 };

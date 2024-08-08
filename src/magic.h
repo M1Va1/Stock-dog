@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+Bitboard GenKnightMask(Square sq);
+
 class MagicGenerator {
 public:
     MagicGenerator();
@@ -24,6 +26,8 @@ public:
 
     void SaveTables(const std::string& rookFilename, const std::string& bishopFilename) const;
     void LoadTables(const std::string& rookFilename, const std::string& bishopFilename);
+
+    Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt) const;
 
     // private:
     std::array<Bitboard, SQUARE_NB> rook_masks;
