@@ -4,6 +4,8 @@
 #include "magic.h"
 #include "move.h"
 
+constexpr Bitboard FULL_FIELD = 0xFFFFFFFFFFFFFFFFULL;
+
 bool IsOccupied(Bitboard bb, Square sq);
 
 void PrintKnightMasks();
@@ -22,7 +24,7 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
-    Bitboard CalcNewAttackMap(Move move);
+    Bitboard CalcAttackMap(Move move);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -38,7 +40,7 @@ public:
     void PrintBoard() const;
 
     bool IsDoublePush(Move move);
-    bool IsInCheck(Color color, const MagicGenerator &magic_generator);
+    bool IsInCheck(Color color, const MagicGenerator& magic_generator);
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
@@ -47,6 +49,9 @@ public:
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
     Bitboard AttackMap;
+
+    Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
+    Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;
 
     Move last_move;
 };

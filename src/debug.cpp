@@ -34,3 +34,8 @@ void VisualizeSquares(std::vector<Square> squares) {
     }
     b.PrintBoard();
 }
+
+void VisualizeBitboard(Bitboard bb) {
+    std::vector<Square> squares = GetSquares(bb);
+    VisualizeSquares(squares);
+}

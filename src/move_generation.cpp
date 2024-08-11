@@ -111,8 +111,12 @@ ChessBoard::ChessBoard(const std::string &input) {
 Bitboard ChessBoard::GetPieces(const Color color, const PieceType piece) const {
     return pieces[piece] & colors[color];
 }
-Bitboard CalcNewAttackMap(Move move) {
+
+Bitboard CalcAttackMap(Color color) {
     ;
+    // Direction dir = (color == WHITE) ? UP : DOWN;
+    // Bitboard AttackMap = 0;
+    // AttackMap |
 }
 
 bool ChessBoard::IsInCheck(Color color, const MagicGenerator &magic_generator) {

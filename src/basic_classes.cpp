@@ -27,7 +27,7 @@ bool IsWithinBounds(Bitboard position, Direction dir) {
 Direction GetDir(Square from, Square to) {
     return static_cast<Direction>(from - to);
 }
-
+ 
 Square MoveSquare(Square sq, int dir) {
     return static_cast<Square>(sq + dir);
 }
