@@ -333,3 +333,29 @@ void ChessBoard::GenAllMoves(const Color color, const MagicGenerator &magic_gene
     GenQueenMoves(color, magic_generator);
     GenKingMoves(color);
 }
+
+void ChessBoard::CalcCaptureMask(Color color, const MagicGenerator &magic_generator) {
+    Square KingPos = GetFirstSquare(GetPieces(color, KING));
+    Color opposit_color = static_cast<Color>(!color);
+    Direction dir = (color == WHITE) ? UP : DOWN;
+
+    Bitboard board = ~GetEmptySquares();
+
+    Bitboard enemy_pawns = GetPieces(opposit_color, PAWN);
+    Bitboard enemy_queens = GetPieces(opposit_color, QUEEN);
+    Bitboard enemy_bishops = GetPieces(opposit_color, BISHOP);
+    Bitboard enemy_rooks = GetPieces(opposit_color, ROOK);
+    Bitboard enemy_knights = GetPieces(opposit_color, KNIGHT);
+
+    Bitboard pawns_available_moves = (MoveSquare(KingPos, (dir + LEFT)) | MoveSquare(KingPos, (dir + RIGHT)));
+    Bitboard bishop_available_moves = magic_generator.CalcMoveTable(KingPos, board, BISHOP);
+    Bitboard rook_available_moves = magic_generator.CalcMoveTable(KingPos, board, ROOK);
+    Bitboard knight_available_moves = knight_masks[KingPos];
+
+    capture_mask = enemy_pawns & pawns_available_moves | enemy_bishops & bishop_available_moves |
+                   enemy_knights & knight_available_moves | enemy_queens & bishop_available_moves |
+                   enemy_queens & rook_available_moves | enemy_rooks & rook_available_moves;
+}
+
+void CalcPushMask() {
+}

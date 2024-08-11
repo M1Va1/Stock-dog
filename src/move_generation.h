@@ -36,6 +36,7 @@ public:
     void ClearMoves();
     void GenPromotions(Square from, Square to);
     void GenAllMoves(Color color, const MagicGenerator& magic_generator);
+    void CalcCaptureMask(Color color, const MagicGenerator& magic_generator);
 
     void PrintBoard() const;
 

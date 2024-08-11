@@ -27,28 +27,28 @@ bool IsWithinBounds(Bitboard position, Direction dir) {
 Direction GetDir(Square from, Square to) {
     return static_cast<Direction>(from - to);
 }
- 
+
 Square MoveSquare(Square sq, int dir) {
-    return static_cast<Square>(sq + dir);
+    return MoveSquare(sq, static_cast<Direction>(dir));
 }
 
 Square MoveSquare(Square sq, Direction dir) {
-    if (!IsWithinBounds(sq, dir))
-        std::cerr << "MoveSquare: " << sq << " with: " << dir << " is out of bounds\n";
-
-    return static_cast<Square>(sq + dir);
+    Bitboard bb = SquareToBitboard(sq);
+    return GetFirstSquare(MoveSquare(bb, dir));
 }
 
 Square MoveSquare(Square sq, const std::vector<Direction> &dir) {
     for (Direction d : dir)
         sq = MoveSquare(sq, d);
-
     return sq;
 }
 
 Bitboard MoveSquare(Bitboard bb, Direction dir) {
-    if (!IsWithinBounds(bb, dir)) {
-        return bb;
+    if (dir == UP_LEFT || dir == LEFT || dir == DOWN_LEFT) {
+        bb &= ~FILE_A;
+    }
+    if (dir == UP_RIGHT || dir == RIGHT || dir == DOWN_RIGHT) {
+        bb &= ~FILE_H;
     }
     if (dir > 0) {
         return bb << dir;
@@ -59,9 +59,6 @@ Bitboard MoveSquare(Bitboard bb, Direction dir) {
 Bitboard MoveSquare(Bitboard bb, const std::vector<Direction> &dirs) {
     Bitboard initial_bb = bb;
     for (Direction dir : dirs) {
-        if (!IsWithinBounds(bb, dir)) {
-            return initial_bb;
-        }
         bb = MoveSquare(bb, dir);
     }
     return bb;
