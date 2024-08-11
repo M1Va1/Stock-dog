@@ -28,7 +28,7 @@ public:
 
     Move Inversed() const;
 
-    Move ggh();
+    Move SuckCock();
 
 private:
     uint16_t description = 0;
