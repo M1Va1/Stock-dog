@@ -112,14 +112,7 @@ Bitboard ChessBoard::GetPieces(const Color color, const PieceType piece) const {
     return pieces[piece] & colors[color];
 }
 
-Bitboard CalcAttackMap(Color color) {
-    ;
-    // Direction dir = (color == WHITE) ? UP : DOWN;
-    // Bitboard AttackMap = 0;
-    // AttackMap |
-}
-
-bool ChessBoard::IsInCheck(Color color, const MagicGenerator &magic_generator) {
+bool ChessBoard::IsInCheck(Color color) {
     Square KingPos = GetFirstSquare(GetPieces(color, KING));
     Direction dir = (color == WHITE) ? UP : DOWN;
     for (Direction cur_dir : {static_cast<Direction>(dir + LEFT), static_cast<Direction>(dir + RIGHT)}) {
@@ -128,12 +121,12 @@ bool ChessBoard::IsInCheck(Color color, const MagicGenerator &magic_generator) {
             return true;
     }
     Bitboard board = ~GetEmptySquares();
-    Color opposit_color = static_cast<Color>(BLACK - WHITE);
-    Bitboard enemy_queens = GetPieces(opposit_color, QUEEN);
-    Bitboard enemy_bishops = GetPieces(opposit_color, BISHOP);
-    Bitboard enemy_rooks = GetPieces(opposit_color, ROOK);
-    Bitboard bishop_available_moves = magic_generator.CalcMoveTable(KingPos, board, BISHOP);
-    Bitboard rook_available_moves = magic_generator.CalcMoveTable(KingPos, board, ROOK);
+    Color opposite_color = static_cast<Color>(BLACK - WHITE);
+    Bitboard enemy_queens = GetPieces(opposite_color, QUEEN);
+    Bitboard enemy_bishops = GetPieces(opposite_color, BISHOP);
+    Bitboard enemy_rooks = GetPieces(opposite_color, ROOK);
+    Bitboard bishop_available_moves = CalcMoveTable(KingPos, board, BISHOP);
+    Bitboard rook_available_moves = CalcMoveTable(KingPos, board, ROOK);
     if (enemy_queens & bishop_available_moves || enemy_bishops & bishop_available_moves)
         return true;
     if (enemy_queens & rook_available_moves || enemy_rooks & rook_available_moves)
@@ -273,34 +266,33 @@ void ChessBoard::GenKnightMoves(const Color color) {
     }
 }
 
-void ChessBoard::GenBishopMoves(const Color color, const MagicGenerator &magic_generator) {
+void ChessBoard::GenBishopMoves(const Color color) {
     Bitboard bishops = GetPieces(color, BISHOP);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(bishops)) {
-        std::vector<Square> bishop_moves =
-            GetSquares(magic_generator.CalcMoveTable(sq, board, BISHOP) & ~colors[color]);
+        std::vector<Square> bishop_moves = GetSquares(CalcMoveTable(sq, board, BISHOP) & ~colors[color]);
         for (auto move : bishop_moves) {
             moves.push_back({sq, move});
         }
     }
 }
 
-void ChessBoard::GenRookMoves(const Color color, const MagicGenerator &magic_generator) {
+void ChessBoard::GenRookMoves(const Color color) {
     Bitboard rooks = GetPieces(color, ROOK);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(rooks)) {
-        std::vector<Square> rook_moves = GetSquares(magic_generator.CalcMoveTable(sq, board, ROOK) & ~colors[color]);
+        std::vector<Square> rook_moves = GetSquares(CalcMoveTable(sq, board, ROOK) & ~colors[color]);
         for (auto move : rook_moves) {
             moves.push_back({sq, move});
         }
     }
 }
 
-void ChessBoard::GenQueenMoves(const Color color, const MagicGenerator &magic_generator) {
+void ChessBoard::GenQueenMoves(const Color color) {
     Bitboard queens = GetPieces(color, QUEEN);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(queens)) {
-        std::vector<Square> quen_moves = GetSquares(magic_generator.CalcMoveTable(sq, board, QUEEN) & ~colors[color]);
+        std::vector<Square> quen_moves = GetSquares(CalcMoveTable(sq, board, QUEEN) & ~colors[color]);
         for (auto move : quen_moves) {
             moves.push_back({sq, move});
         }
@@ -324,33 +316,60 @@ void ChessBoard::ClearMoves() {
     moves.clear();
 }
 
-void ChessBoard::GenAllMoves(const Color color, const MagicGenerator &magic_generator) {
+void ChessBoard::GenAllMoves(const Color color) {
     ClearMoves();
     GenPawnMoves(color);
     GenKnightMoves(color);
-    GenBishopMoves(color, magic_generator);
-    GenRookMoves(color, magic_generator);
-    GenQueenMoves(color, magic_generator);
+    GenBishopMoves(color);
+    GenRookMoves(color);
+    GenQueenMoves(color);
     GenKingMoves(color);
 }
 
-void ChessBoard::CalcCaptureMask(Color color, const MagicGenerator &magic_generator) {
-    Square KingPos = GetFirstSquare(GetPieces(color, KING));
-    Color opposit_color = static_cast<Color>(!color);
+Bitboard ChessBoard::CalcAttackMap(Color color) {
+    Square king_pos = GetFirstSquare(GetPieces(color, KING));
+    Color opposite_color = static_cast<Color>(!color);
+    RemovePiece(king_pos);
+
     Direction dir = (color == WHITE) ? UP : DOWN;
 
     Bitboard board = ~GetEmptySquares();
 
-    Bitboard enemy_pawns = GetPieces(opposit_color, PAWN);
-    Bitboard enemy_queens = GetPieces(opposit_color, QUEEN);
-    Bitboard enemy_bishops = GetPieces(opposit_color, BISHOP);
-    Bitboard enemy_rooks = GetPieces(opposit_color, ROOK);
-    Bitboard enemy_knights = GetPieces(opposit_color, KNIGHT);
+    Bitboard attack_map = 0;
 
-    Bitboard pawns_available_moves = (MoveSquare(KingPos, (dir + LEFT)) | MoveSquare(KingPos, (dir + RIGHT)));
-    Bitboard bishop_available_moves = magic_generator.CalcMoveTable(KingPos, board, BISHOP);
-    Bitboard rook_available_moves = magic_generator.CalcMoveTable(KingPos, board, ROOK);
-    Bitboard knight_available_moves = knight_masks[KingPos];
+    Bitboard enemy_pawns = GetPieces(opposite_color, PAWN);
+    Bitboard enemy_queens = GetPieces(opposite_color, QUEEN);
+    Bitboard enemy_bishops = GetPieces(opposite_color, BISHOP);
+    Bitboard enemy_rooks = GetPieces(opposite_color, ROOK);
+    Bitboard enemy_knights = GetPieces(opposite_color, KNIGHT);
+
+    for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN}) {
+        std::vector<Square> squares = GetSquares(GetPieces(color, pt));
+        for (Square cur_sqre : squares) {
+            attack_map |= CalcMoveTable(cur_sqre, board, pt);
+        }
+    }
+    return attack_map;
+    SetPiece(KING, opposite_color, king_pos);
+}
+
+void ChessBoard::CalcCaptureMask(Color color) {
+    Square king_pos = GetFirstSquare(GetPieces(color, KING));
+    Color opposite_color = static_cast<Color>(!color);
+    Direction dir = (color == WHITE) ? UP : DOWN;
+
+    Bitboard board = ~GetEmptySquares();
+
+    Bitboard enemy_pawns = GetPieces(opposite_color, PAWN);
+    Bitboard enemy_queens = GetPieces(opposite_color, QUEEN);
+    Bitboard enemy_bishops = GetPieces(opposite_color, BISHOP);
+    Bitboard enemy_rooks = GetPieces(opposite_color, ROOK);
+    Bitboard enemy_knights = GetPieces(opposite_color, KNIGHT);
+
+    Bitboard pawns_available_moves = (MoveSquare(king_pos, (dir + LEFT)) | MoveSquare(king_pos, (dir + RIGHT)));
+    Bitboard bishop_available_moves = CalcMoveTable(king_pos, board, BISHOP);
+    Bitboard rook_available_moves = CalcMoveTable(king_pos, board, ROOK);
+    Bitboard knight_available_moves = knight_masks[king_pos];
 
     capture_mask = enemy_pawns & pawns_available_moves | enemy_bishops & bishop_available_moves |
                    enemy_knights & knight_available_moves | enemy_queens & bishop_available_moves |

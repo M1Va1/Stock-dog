@@ -213,5 +213,7 @@ const std::array<int, SQUARE_NB> bishop_shifts = {58, 59, 59, 59, 59, 59, 59, 58
                                                   59, 59, 57, 57, 57, 57, 59, 59, 59, 59, 57, 55, 55, 57, 59, 59,
                                                   59, 59, 57, 55, 55, 57, 59, 59, 59, 59, 57, 57, 57, 57, 59, 59,
                                                   59, 59, 59, 59, 59, 59, 59, 59, 58, 59, 59, 59, 59, 59, 59, 58};
+std::array<std::vector<Bitboard>, SQUARE_NB> rook_move_table;
+std::array<std::vector<Bitboard>, SQUARE_NB> bishop_move_table;
 
 

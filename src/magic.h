@@ -1,5 +1,6 @@
 #pragma once
 #include "basic_classes.h"
+#include "precomputed.h"
 #include <fstream>
 #include <iostream>
 
@@ -39,5 +40,7 @@ public:
     std::array<std::vector<Bitboard>, SQUARE_NB> rook_move_table;
     std::array<std::vector<Bitboard>, SQUARE_NB> bishop_move_table;
 };
+
+Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt);
 
 void saveBishopMoveTable(const std::vector<std::vector<int>>& table, const std::string& filename);

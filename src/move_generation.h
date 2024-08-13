@@ -24,24 +24,24 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
-    Bitboard CalcAttackMap(Move move);
+    Bitboard CalcAttackMap(Color color);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
     void GenKnightMoves(Color color);
-    void GenBishopMoves(Color color, const MagicGenerator& magic_generator);
-    void GenRookMoves(Color color, const MagicGenerator& magic_generator);
-    void GenQueenMoves(Color color, const MagicGenerator& magic_generator);
+    void GenBishopMoves(Color color);
+    void GenRookMoves(Color color);
+    void GenQueenMoves(Color color);
     void GenKingMoves(Color color);
     void ClearMoves();
     void GenPromotions(Square from, Square to);
-    void GenAllMoves(Color color, const MagicGenerator& magic_generator);
-    void CalcCaptureMask(Color color, const MagicGenerator& magic_generator);
+    void GenAllMoves(Color color);
+    void CalcCaptureMask(Color color);
 
     void PrintBoard() const;
 
     bool IsDoublePush(Move move);
-    bool IsInCheck(Color color, const MagicGenerator& magic_generator);
+    bool IsInCheck(Color color);
 
     ChessBoard& operator=(const ChessBoard& rhs) = default;
 
