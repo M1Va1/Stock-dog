@@ -284,49 +284,34 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
     }
 }
 
-Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt) {
-    if (pt == BISHOP) {
-        Bitboard mask = bishop_masks[sq] & block_board;
-        uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
-        return bishop_move_table[sq][index];
-    } else if (pt == ROOK) {
-        Bitboard mask = rook_masks[sq] & block_board;
-        uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
-        return rook_move_table[sq][index];
-    } else if (pt == QUEEN) {
-        Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
-        Bitboard mask_of_rook = rook_masks[sq] & block_board;
-        uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
-        uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
-        return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
-    } else if (pt == KNIGHT) {
-        return knight_masks[sq];
-    } else {
-        throw "WHRONG TYPE";
-    }
-}
+template <PieceType pt>
+Bitboard CalcMoveTable(Square sq, Bitboard block_board);
 
-Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color color) {
-    if (pt == BISHOP) {
-        Bitboard mask = bishop_masks[sq] & block_board;
-        uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
-        return bishop_move_table[sq][index];
-    } else if (pt == ROOK) {
-        Bitboard mask = rook_masks[sq] & block_board;
-        uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
-        return rook_move_table[sq][index];
-    } else if (pt == QUEEN) {
-        Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
-        Bitboard mask_of_rook = rook_masks[sq] & block_board;
-        uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
-        uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
-        return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
-    } else if (pt == KNIGHT) {
-        return knight_masks[sq];
-    } else if (pt == PAWN) {
-        Direction dir = (color == WHITE) ? UP : DOWN;
-        return (MoveSquare(sq, (dir + LEFT)) | MoveSquare(sq, (dir + RIGHT)));
-    } else {
-        throw "WHRONG TYPE";
-    }
+template <>
+Bitboard CalcMoveTable<BISHOP>(Square sq, Bitboard block_board) {
+    Bitboard mask = bishop_masks[sq] & block_board;
+    uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
+    return bishop_move_table[sq][index];
+}
+template <>
+Bitboard CalcMoveTable<ROOK>(Square sq, Bitboard block_board) {
+    Bitboard mask = rook_masks[sq] & block_board;
+    uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
+    return rook_move_table[sq][index];
+}
+template <>
+Bitboard CalcMoveTable<QUEEN>(Square sq, Bitboard block_board) {
+    Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
+    Bitboard mask_of_rook = rook_masks[sq] & block_board;
+    uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
+    uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
+    return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
+}
+template <>
+Bitboard CalcMoveTable<KNIGHT>(Square sq, Bitboard block_board) {
+    return knight_masks[sq];
+}
+template <PieceType pt>
+Bitboard CalcMoveTable(Square, Bitboard) {
+    throw std::invalid_argument("shitty piece type detected");
 }
