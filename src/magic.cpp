@@ -115,7 +115,7 @@ Bitboard MagicGenerator::FindRookMagic(Square sq) {
         if (!fail) {
             rook_magics[sq] = magic_candidate;
             rook_shifts[sq] = bits_to_shift;
-            rook_move_table[sq] = move_table;
+            rook_move_table_[sq] = move_table;
             return magic_candidate;
         }
     }
@@ -146,7 +146,7 @@ Bitboard MagicGenerator::FindBishopMagic(Square sq) {
         if (!fail) {
             bishop_magics[sq] = magic_candidate;
             bishop_shifts[sq] = bits_to_shift;
-            bishop_move_table[sq] = move_table;
+            bishop_move_table_[sq] = move_table;
 
             return magic_candidate;
         }
@@ -208,7 +208,7 @@ void MagicGenerator::PrintTables() const {
     for (int i = 0; i < SQUARE_NB; ++i) {
         Square sq = static_cast<Square>(i);
         std::cout << "{\n";
-        for (auto rook_move : rook_move_table[sq]) {
+        for (auto rook_move : rook_move_table_[sq]) {
             std::cout << rook_move << "ULL, \n";
         }
         std::cout << "},\n";
@@ -218,7 +218,7 @@ void MagicGenerator::PrintTables() const {
     for (int i = 0; i < SQUARE_NB; ++i) {
         Square sq = static_cast<Square>(i);
         std::cout << "{\n";
-        for (auto bishop_move : bishop_move_table[sq]) {
+        for (auto bishop_move : bishop_move_table_[sq]) {
             std::cout << bishop_move << "ULL, \n";
         }
         std::cout << "},\n";
@@ -237,7 +237,7 @@ void MagicGenerator::SaveTables(const std::string& rookFilename, const std::stri
         return;
     }
 
-    for (const auto& table : rook_move_table) {
+    for (const auto& table : rook_move_table_) {
         size_t size = table.size();
         rookFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
         rookFile.write(reinterpret_cast<const char*>(table.data()), size * sizeof(Bitboard));
@@ -249,7 +249,7 @@ void MagicGenerator::SaveTables(const std::string& rookFilename, const std::stri
         return;
     }
 
-    for (const auto& table : bishop_move_table) {
+    for (const auto& table : bishop_move_table_) {
         size_t size = table.size();
         bishopFile.write(reinterpret_cast<const char*>(&size), sizeof(size));
         bishopFile.write(reinterpret_cast<const char*>(table.data()), size * sizeof(Bitboard));
@@ -263,7 +263,7 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
         return;
     }
 
-    for (auto& table : rook_move_table) {
+    for (auto& table : rook_move_table_) {
         size_t size;
         rookFile.read(reinterpret_cast<char*>(&size), sizeof(size));
         table.resize(size);
@@ -276,7 +276,35 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
         return;
     }
 
-    for (auto& table : bishop_move_table) {
+    for (auto& table : bishop_move_table_) {
+        size_t size;
+        bishopFile.read(reinterpret_cast<char*>(&size), sizeof(size));
+        table.resize(size);
+        bishopFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
+    }
+    global::bishop_move_table = bishop_move_table_;
+    global::rook_move_table = rook_move_table_;
+}
+
+void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename) {
+    std::ifstream rookFile(rookFilename, std::ios::binary);
+    if (!rookFile) {
+        std::cerr << "Error opening file for reading: " << rookFilename << "\n";
+        return;
+    }
+    for (auto& table : global::rook_move_table) {
+        size_t size;
+        rookFile.read(reinterpret_cast<char*>(&size), sizeof(size));
+        table.resize(size);
+        rookFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
+    }
+
+    std::ifstream bishopFile(bishopFilename, std::ios::binary);
+    if (!bishopFile) {
+        std::cerr << "Error opening file for reading: " << bishopFilename << "\n";
+        return;
+    }
+    for (auto& table : global::bishop_move_table) {
         size_t size;
         bishopFile.read(reinterpret_cast<char*>(&size), sizeof(size));
         table.resize(size);
@@ -284,34 +312,34 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
     }
 }
 
-template <PieceType pt>
-Bitboard CalcMoveTable(Square sq, Bitboard block_board);
+// template <PieceType pt>
+// Bitboard CalcMoveTable(Square sq, Bitboard block_board);
 
-template <>
-Bitboard CalcMoveTable<BISHOP>(Square sq, Bitboard block_board) {
-    Bitboard mask = bishop_masks[sq] & block_board;
-    uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
-    return bishop_move_table[sq][index];
-}
-template <>
-Bitboard CalcMoveTable<ROOK>(Square sq, Bitboard block_board) {
-    Bitboard mask = rook_masks[sq] & block_board;
-    uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
-    return rook_move_table[sq][index];
-}
-template <>
-Bitboard CalcMoveTable<QUEEN>(Square sq, Bitboard block_board) {
-    Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
-    Bitboard mask_of_rook = rook_masks[sq] & block_board;
-    uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
-    uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
-    return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
-}
-template <>
-Bitboard CalcMoveTable<KNIGHT>(Square sq, Bitboard block_board) {
-    return knight_masks[sq];
-}
-template <PieceType pt>
-Bitboard CalcMoveTable(Square, Bitboard) {
-    throw std::invalid_argument("shitty piece type detected");
-}
+// template <>
+// Bitboard CalcMoveTable<BISHOP>(Square sq, Bitboard block_board) {
+//     Bitboard mask = bishop_masks[sq] & block_board;
+//     uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
+//     return bishop_move_table[sq][index];
+// }
+// template <>
+// Bitboard CalcMoveTable<ROOK>(Square sq, Bitboard block_board) {
+//     Bitboard mask = rook_masks[sq] & block_board;
+//     uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
+//     return rook_move_table[sq][index];
+// }
+// template <>
+// Bitboard CalcMoveTable<QUEEN>(Square sq, Bitboard block_board) {
+//     Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
+//     Bitboard mask_of_rook = rook_masks[sq] & block_board;
+//     uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
+//     uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
+//     return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
+// }
+// template <>
+// Bitboard CalcMoveTable<KNIGHT>(Square sq, Bitboard block_board) {
+//     return knight_masks[sq];
+// }
+// template <PieceType pt>
+// Bitboard CalcMoveTable(Square, Bitboard) {
+//     throw std::invalid_argument("shitty piece type detected");
+// }

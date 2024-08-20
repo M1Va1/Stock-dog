@@ -28,8 +28,6 @@ public:
     void SaveTables(const std::string& rookFilename, const std::string& bishopFilename) const;
     void LoadTables(const std::string& rookFilename, const std::string& bishopFilename);
 
-    Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt) const;
-
     // private:
     std::array<Bitboard, SQUARE_NB> rook_masks;
     std::array<Bitboard, SQUARE_NB> bishop_masks;
@@ -37,10 +35,9 @@ public:
     std::array<Bitboard, SQUARE_NB> bishop_magics;
     std::array<int, SQUARE_NB> rook_shifts;
     std::array<int, SQUARE_NB> bishop_shifts;
-    std::array<std::vector<Bitboard>, SQUARE_NB> rook_move_table;
-    std::array<std::vector<Bitboard>, SQUARE_NB> bishop_move_table;
+    std::array<std::vector<Bitboard>, SQUARE_NB> rook_move_table_;
+    std::array<std::vector<Bitboard>, SQUARE_NB> bishop_move_table_;
 };
 
-Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt);
-
 void saveBishopMoveTable(const std::vector<std::vector<int>>& table, const std::string& filename);
+void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename);

@@ -12,6 +12,7 @@ set(SOURCES
     src/move.cpp
     src/debug.cpp
     src/main.cpp
+    src/precomputed.cpp
 )
 
 add_executable(Stockdog ${SOURCES})

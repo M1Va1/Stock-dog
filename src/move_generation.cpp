@@ -57,6 +57,31 @@ Piece ChessBoard::PieceOnSquare(const Square sq) {
     return {static_cast<PieceType>(piece_type), piece_color};
 };
 
+Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color color) {
+    if (pt == BISHOP) {
+        Bitboard mask = bishop_masks[sq] & block_board;
+        uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
+        return global::bishop_move_table[sq][index];
+    } else if (pt == ROOK) {
+        Bitboard mask = rook_masks[sq] & block_board;
+        uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
+        return global::rook_move_table[sq][index];
+    } else if (pt == QUEEN) {
+        Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
+        Bitboard mask_of_rook = rook_masks[sq] & block_board;
+        uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
+        uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
+        return global::rook_move_table[sq][rook_index] & global::bishop_move_table[sq][bishop_index];
+    } else if (pt == KNIGHT) {
+        return knight_masks[sq];
+    } else if (pt == PAWN) {
+        Direction dir = (color == WHITE) ? UP : DOWN;
+        return (MoveSquare(sq, (dir + LEFT)) | MoveSquare(sq, (dir + RIGHT)));
+    } else {
+        throw "WHRONG TYPE";
+    }
+}
+
 void ChessBoard::MakeMove(const Move cur_move) {
     if (cur_move.GetType() == NORMAL || cur_move.GetType() == EN_PASSANT) {
         Piece buff = RemovePiece(cur_move.GetFrom());
@@ -326,7 +351,7 @@ void ChessBoard::GenAllMoves(const Color color) {
     GenKingMoves(color);
 }
 
-Bitboard ChessBoard::CalcAttackMap(Color color) {
+void ChessBoard::CalcAttackMap(Color color) {
     Square king_pos = GetFirstSquare(GetPieces(color, KING));
     Color opposite_color = static_cast<Color>(!color);
     RemovePiece(king_pos);
@@ -335,7 +360,7 @@ Bitboard ChessBoard::CalcAttackMap(Color color) {
 
     Bitboard board = ~GetEmptySquares();
 
-    Bitboard attack_map = 0;
+    attack_map = 0;
 
     Bitboard enemy_pawns = GetPieces(opposite_color, PAWN);
     Bitboard enemy_queens = GetPieces(opposite_color, QUEEN);
@@ -346,10 +371,9 @@ Bitboard ChessBoard::CalcAttackMap(Color color) {
     for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN}) {
         std::vector<Square> squares = GetSquares(GetPieces(color, pt));
         for (Square cur_sqre : squares) {
-            attack_map |= CalcMoveTable(cur_sqre, board, pt);
+            attack_map |= CalcMoveTable(cur_sqre, board, pt, color);
         }
     }
-    return attack_map;
     SetPiece(KING, opposite_color, king_pos);
 }
 
@@ -374,6 +398,8 @@ void ChessBoard::CalcCaptureMask(Color color) {
     capture_mask = enemy_pawns & pawns_available_moves | enemy_bishops & bishop_available_moves |
                    enemy_knights & knight_available_moves | enemy_queens & bishop_available_moves |
                    enemy_queens & rook_available_moves | enemy_rooks & rook_available_moves;
+    if (!capture_mask)
+        capture_mask = FULL_FIELD;
 }
 
 void CalcPushMask() {

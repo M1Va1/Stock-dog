@@ -1,6 +1,5 @@
 #pragma once
 #include "basic_classes.h"
-#include "precomputed.h"
 #include "magic.h"
 #include "move.h"
 
@@ -10,6 +9,7 @@ bool IsOccupied(Bitboard bb, Square sq);
 
 void PrintKnightMasks();
 void PrintKingMask();
+Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color color = BLACK);
 
 class ChessBoard {
 public:
@@ -24,7 +24,7 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
-    Bitboard CalcAttackMap(Color color);
+    void CalcAttackMap(Color color);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -49,7 +49,7 @@ public:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
-    Bitboard AttackMap;
+    Bitboard attack_map;
 
     Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
     Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;

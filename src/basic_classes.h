@@ -60,7 +60,8 @@ enum Direction : int8_t {
     UP_LEFT = 7,
     UP_RIGHT = 9,
     DOWN_LEFT = -9,
-    DOWN_RIGHT = -7
+    DOWN_RIGHT = -7,
+    DIRECTION_NB = 8
 };
 
 enum Rank : Bitboard {
