@@ -24,7 +24,6 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
-    void CalcAttackMap(Color color);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -36,8 +35,11 @@ public:
     void ClearMoves();
     void GenPromotions(Square from, Square to);
     void GenAllMoves(Color color);
+
+    void CalcAttackMap(Color color);
     void CalcCaptureMask(Color color);
     void CalcPushMask(Color color);
+    void CalcAllMasks(Color color);
 
     void PrintBoard() const;
 
@@ -50,7 +52,7 @@ public:
     std::vector<Move> moves;
     std::array<Bitboard, PIECE_NB> pieces;
     std::array<Bitboard, COLOR_NB> colors;
-    Bitboard attack_map;
+    std::array<Bitboard, COLOR_NB> attack_map;
 
     Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
     Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;

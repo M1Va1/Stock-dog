@@ -223,7 +223,7 @@ void ChessBoard::GenPawnMoves(const Color color) {
     Direction dir = (color == WHITE) ? UP : DOWN;
     Rank reachable_rank = (color == WHITE) ? RANK_4 : RANK_5;
 
-    Bitboard first_push = MoveSquare(pawns, dir) & empty_squares;
+    Bitboard first_push = MoveSquare(pawns, dir) & empty_squares & push_mask;
     for (Square to : GetSquares(first_push)) {
         Square from = MoveSquare(to, -dir);
         if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
@@ -233,13 +233,13 @@ void ChessBoard::GenPawnMoves(const Color color) {
         }
     }
 
-    Bitboard second_push = MoveSquare(first_push, dir) & empty_squares & reachable_rank;
+    Bitboard second_push = MoveSquare(first_push, dir) & empty_squares & reachable_rank & push_mask;
     for (Square to : GetSquares(second_push)) {
         Square from = MoveSquare(to, -2 * dir);
         moves.push_back({from, to});
     }
 
-    Bitboard left_attacks = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & colors[!color];
+    Bitboard left_attacks = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & colors[!color] & capture_mask;
     for (Square to : GetSquares(left_attacks)) {
         Square from = MoveSquare(to, -dir - LEFT);
         if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
@@ -249,7 +249,7 @@ void ChessBoard::GenPawnMoves(const Color color) {
         }
     }
 
-    Bitboard right_attacks = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & colors[!color];
+    Bitboard right_attacks = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & colors[!color] & capture_mask;
     for (Square to : GetSquares(right_attacks)) {
         Square from = MoveSquare(to, -dir - RIGHT);
         if (SquareToBitboard(to) & RANK_1 || SquareToBitboard(to) & RANK_8) {
@@ -259,15 +259,15 @@ void ChessBoard::GenPawnMoves(const Color color) {
         }
     }
 
-    Bitboard left_en_passant =
-        MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) & MoveToFriendSide(DoublePushes & colors[!color]);
+    Bitboard left_en_passant = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) &
+                               MoveToFriendSide(DoublePushes & colors[!color]) & push_mask;
     if (left_en_passant) {
         Square to = GetFirstSquare(left_en_passant);
         Square from = MoveSquare(to, -dir - LEFT);
         moves.push_back({from, to, EN_PASSANT});
     }
-    Bitboard right_en_passant =
-        MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) & MoveToFriendSide(DoublePushes & colors[!color]);
+    Bitboard right_en_passant = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) &
+                                MoveToFriendSide(DoublePushes & colors[!color] & push_mask);
     if (right_en_passant) {
         Square to = GetFirstSquare(right_en_passant);
         Square from = MoveSquare(to, -dir - RIGHT);
@@ -280,12 +280,10 @@ void ChessBoard::GenKnightMoves(const Color color) {
     Bitboard friendly_pieces = colors[color];
 
     for (Square from : GetSquares(knights)) {
-        Bitboard possible_moves = 0;
-        for (const auto &dir : KnightMoves) {
-            possible_moves |= MoveSquare(SquareToBitboard(from), dir);
-        }
-        possible_moves &= ~friendly_pieces;
-        for (Square to : GetSquares(possible_moves)) {
+        std::vector<Square> knight_moves =
+            GetSquares(knight_masks[from] & ~friendly_pieces & (push_mask | capture_mask));
+
+        for (Square to : knight_moves) {
             moves.push_back({from, to});
         }
     }
@@ -295,7 +293,8 @@ void ChessBoard::GenBishopMoves(const Color color) {
     Bitboard bishops = GetPieces(color, BISHOP);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(bishops)) {
-        std::vector<Square> bishop_moves = GetSquares(CalcMoveTable(sq, board, BISHOP) & ~colors[color]);
+        std::vector<Square> bishop_moves =
+            GetSquares(CalcMoveTable(sq, board, BISHOP) & ~colors[color] & (push_mask | capture_mask));
         for (auto move : bishop_moves) {
             moves.push_back({sq, move});
         }
@@ -306,7 +305,8 @@ void ChessBoard::GenRookMoves(const Color color) {
     Bitboard rooks = GetPieces(color, ROOK);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(rooks)) {
-        std::vector<Square> rook_moves = GetSquares(CalcMoveTable(sq, board, ROOK) & ~colors[color]);
+        std::vector<Square> rook_moves =
+            GetSquares(CalcMoveTable(sq, board, ROOK) & ~colors[color] & (push_mask | capture_mask));
         for (auto move : rook_moves) {
             moves.push_back({sq, move});
         }
@@ -317,7 +317,8 @@ void ChessBoard::GenQueenMoves(const Color color) {
     Bitboard queens = GetPieces(color, QUEEN);
     Bitboard board = ~GetEmptySquares();
     for (auto sq : GetSquares(queens)) {
-        std::vector<Square> quen_moves = GetSquares(CalcMoveTable(sq, board, QUEEN) & ~colors[color]);
+        std::vector<Square> quen_moves =
+            GetSquares(CalcMoveTable(sq, board, QUEEN) & ~colors[color] & (push_mask | capture_mask));
         for (auto move : quen_moves) {
             moves.push_back({sq, move});
         }
@@ -325,13 +326,9 @@ void ChessBoard::GenQueenMoves(const Color color) {
 }
 
 void ChessBoard::GenKingMoves(Color color) {
-    Bitboard kings = GetPieces(color, KING);
-    Bitboard move_table = 0;
-    Square sq = GetSquares(kings)[0];
-    for (Direction dir : {UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
-        move_table |= SquareToBitboard(MoveSquare(sq, dir));
-    }
-    std::vector<Square> king_moves = GetSquares(move_table & ~colors[color]);
+    Square sq = GetFirstSquare(GetPieces(color, KING));
+    Bitboard move_table = king_masks[sq] & ~colors[color] & ~attack_map[!color];
+    std::vector<Square> king_moves = GetSquares(move_table);
     for (auto move : king_moves) {
         moves.push_back({sq, move});
     }
@@ -343,6 +340,11 @@ void ChessBoard::ClearMoves() {
 
 void ChessBoard::GenAllMoves(const Color color) {
     ClearMoves();
+    CalcAllMasks(color);
+    if (capture_mask == 0) {
+        GenKingMoves(color);
+        return;
+    }
     GenPawnMoves(color);
     GenKnightMoves(color);
     GenBishopMoves(color);
@@ -352,26 +354,18 @@ void ChessBoard::GenAllMoves(const Color color) {
 }
 
 void ChessBoard::CalcAttackMap(Color color) {
-    Square king_pos = GetFirstSquare(GetPieces(color, KING));
     Color opposite_color = static_cast<Color>(!color);
-    RemovePiece(king_pos);
+    Square king_pos = GetFirstSquare(GetPieces(opposite_color, KING));
 
-    Direction dir = (color == WHITE) ? UP : DOWN;
+    RemovePiece(king_pos);
 
     Bitboard board = ~GetEmptySquares();
 
-    attack_map = 0;
-
-    Bitboard enemy_pawns = GetPieces(opposite_color, PAWN);
-    Bitboard enemy_queens = GetPieces(opposite_color, QUEEN);
-    Bitboard enemy_bishops = GetPieces(opposite_color, BISHOP);
-    Bitboard enemy_rooks = GetPieces(opposite_color, ROOK);
-    Bitboard enemy_knights = GetPieces(opposite_color, KNIGHT);
-
+    attack_map[color] = 0;
     for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN}) {
         std::vector<Square> squares = GetSquares(GetPieces(color, pt));
         for (Square cur_sqre : squares) {
-            attack_map |= CalcMoveTable(cur_sqre, board, pt, color);
+            attack_map[color] |= CalcMoveTable(cur_sqre, board, pt, color);
         }
     }
     SetPiece(KING, opposite_color, king_pos);
@@ -401,7 +395,7 @@ void ChessBoard::CalcCaptureMask(Color color) {
     if (!capture_mask)
         capture_mask = FULL_FIELD;
     std::vector<Square> attacked_by_squares = GetSquares(capture_mask);
-    if (attacked_by_squares.size() != 1) {
+    if (attacked_by_squares.size() == 2) {
         capture_mask = 0;
     }
 }
@@ -415,7 +409,7 @@ void ChessBoard::CalcPushMask(Color color) {
     if (capture_mask != FULL_FIELD)
         attacked_by_square = GetFirstSquare(capture_mask);
     else {
-        push_mask = 0;
+        push_mask = FULL_FIELD;
         return;
     }
     if (attacked_by_square == 64) {
@@ -434,4 +428,11 @@ void ChessBoard::CalcPushMask(Color color) {
         push_mask = 0;
         return;
     }
+}
+
+void ChessBoard::CalcAllMasks(Color color) {
+    Color opposite_color = static_cast<Color>(!color);
+    CalcAttackMap(opposite_color);
+    CalcCaptureMask(color);
+    CalcPushMask(color);
 }
