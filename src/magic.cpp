@@ -312,6 +312,22 @@ void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishop
     }
 }
 
+void PrintRayMasks() {
+    for (Direction dir : {UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
+        std::cout << "{\n";
+        for (int8_t sq = A1; sq <= H8; ++sq) {
+            Bitboard mask = 0;
+            Bitboard bb = SquareToBitboard(static_cast<Square>(sq));
+            while (IsWithinBounds(bb, dir)) {
+                bb = MoveSquare(bb, dir);
+                mask |= bb;
+            }
+            std::cout << mask << "ULL, ";
+        }
+        std::cout << "},\n\n\n\n";
+    }
+}
+
 // template <PieceType pt>
 // Bitboard CalcMoveTable(Square sq, Bitboard block_board);
 

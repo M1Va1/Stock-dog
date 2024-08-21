@@ -41,3 +41,4 @@ public:
 
 void saveBishopMoveTable(const std::vector<std::vector<int>>& table, const std::string& filename);
 void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename);
+void PrintRayMasks();

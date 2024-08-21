@@ -37,6 +37,7 @@ public:
     void GenPromotions(Square from, Square to);
     void GenAllMoves(Color color);
     void CalcCaptureMask(Color color);
+    void CalcPushMask(Color color);
 
     void PrintBoard() const;
 

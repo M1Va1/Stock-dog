@@ -10,7 +10,7 @@
 
 using Bitboard = uint64_t;
 
-enum MoveShifts : uint8_t { FROM_BITS = 0, TO_BITS = 6, TYPE_BITS = 12, PIECE_TYPE_DELTA = 2, PROMO_PIECE_BITS = 14};
+enum MoveShifts : uint8_t { FROM_BITS = 0, TO_BITS = 6, TYPE_BITS = 12, PIECE_TYPE_DELTA = 2, PROMO_PIECE_BITS = 14 };
 
 // clang-format off
 enum Square : uint16_t {
@@ -88,7 +88,7 @@ enum File : Bitboard {
 
 enum MoveMask : uint16_t {
     FROM_MASK = 0b1111110000111111,
-    TO_MASK   = 0b0000111111000000,
+    TO_MASK = 0b0000111111000000,
     TYPE_MASK = 0b0011000000000000,
 };
 
@@ -112,6 +112,9 @@ const std::array<std::vector<Direction>, 8> KnightMoves = {{{UP, UP, LEFT},
                                                             {LEFT, LEFT, DOWN},
                                                             {LEFT, LEFT, UP}}};
 
+inline std::map<Direction, size_t> Directions = {{UP, 0},      {DOWN, 1},     {LEFT, 2},      {RIGHT, 3},
+                                                 {UP_LEFT, 4}, {UP_RIGHT, 5}, {DOWN_LEFT, 6}, {DOWN_RIGHT, 7}};
+
 inline std::string SquareToString(Square sq) {
     return std::format("{}{}", FileLetters[sq % 8], sq / 8 + 1);
 }
@@ -121,7 +124,6 @@ inline Bitboard SquareToBitboard(const Square square) {
 }
 
 bool IsWithinBounds(Bitboard position, Direction dir);
-
 
 Direction GetDir(Square from, Square to);
 std::vector<Square> GetSquares(Bitboard bb);

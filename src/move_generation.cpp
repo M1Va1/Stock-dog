@@ -400,7 +400,38 @@ void ChessBoard::CalcCaptureMask(Color color) {
                    enemy_queens & rook_available_moves | enemy_rooks & rook_available_moves;
     if (!capture_mask)
         capture_mask = FULL_FIELD;
+    std::vector<Square> attacked_by_squares = GetSquares(capture_mask);
+    if (attacked_by_squares.size() != 1) {
+        capture_mask = 0;
+    }
 }
 
-void CalcPushMask() {
+void ChessBoard::CalcPushMask(Color color) {
+    Square king_pos = GetFirstSquare(GetPieces(color, KING));
+    push_mask = 0;
+    Bitboard board = ~GetEmptySquares();
+    Square attacked_by_square;
+    Color opposite_color = static_cast<Color>(!color);
+    if (capture_mask != FULL_FIELD)
+        attacked_by_square = GetFirstSquare(capture_mask);
+    else {
+        push_mask = 0;
+        return;
+    }
+    if (attacked_by_square == 64) {
+        push_mask = 0;
+        return;
+    }
+    PieceType cur_pt = PieceOnSquare(attacked_by_square).type;
+    if (cur_pt == BISHOP || cur_pt == ROOK) {
+        push_mask = CalcMoveTable(attacked_by_square, board, cur_pt) & CalcMoveTable(king_pos, board, cur_pt);
+    } else if (cur_pt == QUEEN) {
+        if (CalcMoveTable(king_pos, board, ROOK) & SquareToBitboard(attacked_by_square))
+            push_mask = CalcMoveTable(attacked_by_square, board, ROOK) & CalcMoveTable(king_pos, board, ROOK);
+        else
+            push_mask = CalcMoveTable(attacked_by_square, board, BISHOP) & CalcMoveTable(king_pos, board, BISHOP);
+    } else {
+        push_mask = 0;
+        return;
+    }
 }

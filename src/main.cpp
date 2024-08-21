@@ -10,12 +10,13 @@ int main() {
     // mg.LoadTables("rook_move_table.dat", "bishop_move_table.dat");
     // mg.PrintTables();
     // PrintKnightMasks();
-    // for(Bitboard cur_bb : rook_masks){
+    // for(Bitboard cur_bb : rays[5]){
     //     VisualizeBitboard(cur_bb);
     //     std::cout << "----------\n";
     // }
     // std::cout << "\n\n\n";
     // PrintKingMask();
     // std::cout << "Hello worold!";
+    // PrintRayMasks();
 
 }
