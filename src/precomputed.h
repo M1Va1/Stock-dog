@@ -1,6 +1,10 @@
 #pragma once
 #include "basic_classes.h"
 
+const std::array<std::vector<bool>, COLOR_NB> castling_masks = {
+    {{28Ull, 112Ull},
+     {2017612633061982208ULL, 8070450532247928832ULL}}};  // white long, white short, black long, black short
+
 const std::array<Bitboard, SQUARE_NB> rook_masks = {
     282578800148862ULL,     565157600297596ULL,     1130315200595066ULL,    2260630401190006ULL,
     4521260802379886ULL,    9042521604759646ULL,    18085043209519166ULL,   36170086419038334ULL,

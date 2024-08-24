@@ -6,8 +6,8 @@ int main() {
     // MagicGenerator mg;
     // mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");
     // mg.SaveMagics("rook_magics.dat", "bishop_magics.dat");
-    LoadTablesGlobal("rook_move_table.dat", "bishop_move_table.dat");
-    LoadMagicsGlobal("rook_magics.dat", "bishop_magics.dat");
+    LoadTablesGlobal("precomputed_info/rook_move_table.dat", "precomputed_info/bishop_move_table.dat");
+    LoadMagicsGlobal("precomputed_info/rook_magics.dat", "precomputed_info/bishop_magics.dat");
     ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
     board.PrintBoard();
     board.GenAllMoves(BLACK);

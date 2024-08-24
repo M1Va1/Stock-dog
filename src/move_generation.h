@@ -4,7 +4,6 @@
 #include "move.h"
 // #include "debug.h"
 
-
 bool IsOccupied(Bitboard bb, Square sq);
 
 void PrintKnightMasks();
@@ -24,6 +23,7 @@ public:
         return pieces[NONE];
     };
     Bitboard MoveToFriendSide(Bitboard bb);
+    Bitboard CalcPinMask(Square pinned_piece);
 
     void MakeMove(Move cur_move);
     void GenPawnMoves(Color color);
@@ -36,6 +36,7 @@ public:
     void GenPromotions(Square from, Square to);
     void GenAllMoves(Color color);
 
+    void CalcPinnedPieeces(Color color);
     void CalcAttackMap(Color color);
     void CalcCaptureMask(Color color);
     void CalcPushMask(Color color);
@@ -54,6 +55,9 @@ public:
     std::array<Bitboard, COLOR_NB> colors;
     std::array<Bitboard, COLOR_NB> attack_map;
 
+    std::array<std::vector<bool>, COLOR_NB> castling_availables = {{{1, 1}, {1, 1}}};
+
+    Bitboard pinned_pieces;
     Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
     Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;
 

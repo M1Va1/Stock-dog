@@ -1,1 +1,1 @@
-Move this files to "/build" directory
+Move this folder to "/build" directory
