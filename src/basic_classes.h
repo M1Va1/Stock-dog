@@ -87,7 +87,7 @@ enum File : Bitboard {
 };
 
 enum MoveMask : uint16_t {
-    FROM_MASK = 0b1111110000111111,
+    FROM_MASK = 0b0000000000111111,
     TO_MASK = 0b0000111111000000,
     TYPE_MASK = 0b0011000000000000,
 };

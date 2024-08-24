@@ -19,12 +19,20 @@
 //     }
 // }
 
-void VisualizeMoves(const std::vector<Move>& moves) {
-    ChessBoard b;
+void PrintMove(const Move cur_move) {
+    std::cout << "from: " << cur_move.GetFrom() << "   to: " << cur_move.GetTo() << ' '
+              << "    type: " << cur_move.GetType() << '\n';
+}
+
+void VisualizeMoves(const std::vector<Move>& moves, ChessBoard& board) {
+    ChessBoard prev_board = board;
     for (auto move : moves) {
-        b.SetPiece(PAWN, WHITE, move.GetTo());
+        board.MakeMove(move);
+        board.PrintBoard();
+        PrintMove(move);
+        std::cout << "-----------\n";
+        board = prev_board;
     }
-    b.PrintBoard();
 }
 
 void VisualizeSquares(std::vector<Square> squares) {
@@ -38,4 +46,11 @@ void VisualizeSquares(std::vector<Square> squares) {
 void VisualizeBitboard(Bitboard bb) {
     std::vector<Square> squares = GetSquares(bb);
     VisualizeSquares(squares);
+}
+
+void VisualizeBitboards(const std::vector<Bitboard>& arr) {
+    for (auto cur_bb : arr) {
+        VisualizeBitboard(cur_bb);
+        std::cout << "-----------\n";
+    }
 }

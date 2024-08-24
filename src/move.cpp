@@ -22,7 +22,7 @@ void Move::SetType(MoveType type) {
 }
 
 MoveType Move::GetType() const {
-    return static_cast<MoveType>(description >> TYPE_BITS);
+    return static_cast<MoveType>((description & TYPE_MASK) >> TYPE_BITS);
 }
 PieceType Move::GetPromoPieceType() const {
     return static_cast<PieceType>((description >> PROMO_PIECE_BITS) + PROMO_PIECE_BITS);

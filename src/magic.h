@@ -3,8 +3,7 @@
 #include "precomputed.h"
 #include <fstream>
 #include <iostream>
-
-Bitboard GenKnightMask(Square sq);
+constexpr Bitboard FULL_FIELD = 0xFFFFFFFFFFFFFFFFULL;
 
 class MagicGenerator {
 public:
@@ -27,6 +26,7 @@ public:
 
     void SaveTables(const std::string& rookFilename, const std::string& bishopFilename) const;
     void LoadTables(const std::string& rookFilename, const std::string& bishopFilename);
+    void SaveMagics(const std::string& rookFilename, const std::string& bishopFilename) const;
 
     // private:
     std::array<Bitboard, SQUARE_NB> rook_masks;
@@ -39,6 +39,6 @@ public:
     std::array<std::vector<Bitboard>, SQUARE_NB> bishop_move_table_;
 };
 
-void saveBishopMoveTable(const std::vector<std::vector<int>>& table, const std::string& filename);
 void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename);
+void LoadMagicsGlobal(const std::string& rookFilename, const std::string& bishopFilename);
 void PrintRayMasks();

@@ -53,24 +53,24 @@ Piece ChessBoard::PieceOnSquare(const Square sq) {
         static_cast<Color>(WHITE && IsOccupied(colors[WHITE], sq) || BLACK && IsOccupied(colors[BLACK], sq));
 
     for (uint8_t pt = 0; pt < PIECE_NB; ++pt)
-        piece_type |= pt && IsOccupied(pieces[pt], sq);
+        piece_type |= (pt * IsOccupied(pieces[pt], sq));
     return {static_cast<PieceType>(piece_type), piece_color};
 };
 
 Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color color) {
     if (pt == BISHOP) {
         Bitboard mask = bishop_masks[sq] & block_board;
-        uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
+        uint16_t index = ((mask * global::bishop_magics[sq]) >> (bishop_shifts[sq]));
         return global::bishop_move_table[sq][index];
     } else if (pt == ROOK) {
         Bitboard mask = rook_masks[sq] & block_board;
-        uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
+        uint16_t index = ((mask * global::rook_magics[sq]) >> (rook_shifts[sq]));
         return global::rook_move_table[sq][index];
     } else if (pt == QUEEN) {
         Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
         Bitboard mask_of_rook = rook_masks[sq] & block_board;
-        uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
-        uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
+        uint16_t bishop_index = ((mask_of_bishop * global::bishop_magics[sq]) >> (bishop_shifts[sq]));
+        uint16_t rook_index = ((mask_of_rook * global::rook_magics[sq]) >> (rook_shifts[sq]));
         return global::rook_move_table[sq][rook_index] & global::bishop_move_table[sq][bishop_index];
     } else if (pt == KNIGHT) {
         return knight_masks[sq];
@@ -260,14 +260,16 @@ void ChessBoard::GenPawnMoves(const Color color) {
     }
 
     Bitboard left_en_passant = MoveSquare(pawns, static_cast<Direction>(dir + LEFT)) &
-                               MoveToFriendSide(DoublePushes & colors[!color]) & push_mask;
+                               MoveToFriendSide(DoublePushes & colors[!color]) & push_mask &
+                               MoveToFriendSide(capture_mask);
     if (left_en_passant) {
         Square to = GetFirstSquare(left_en_passant);
         Square from = MoveSquare(to, -dir - LEFT);
         moves.push_back({from, to, EN_PASSANT});
     }
     Bitboard right_en_passant = MoveSquare(pawns, static_cast<Direction>(dir + RIGHT)) &
-                                MoveToFriendSide(DoublePushes & colors[!color] & push_mask);
+                                MoveToFriendSide(DoublePushes & colors[!color] & push_mask) &
+                                MoveToFriendSide(capture_mask);
     if (right_en_passant) {
         Square to = GetFirstSquare(right_en_passant);
         Square from = MoveSquare(to, -dir - RIGHT);
@@ -327,6 +329,8 @@ void ChessBoard::GenQueenMoves(const Color color) {
 
 void ChessBoard::GenKingMoves(Color color) {
     Square sq = GetFirstSquare(GetPieces(color, KING));
+    if (sq == SQUARE_NB)
+        return;
     Bitboard move_table = king_masks[sq] & ~colors[color] & ~attack_map[!color];
     std::vector<Square> king_moves = GetSquares(move_table);
     for (auto move : king_moves) {
@@ -356,8 +360,8 @@ void ChessBoard::GenAllMoves(const Color color) {
 void ChessBoard::CalcAttackMap(Color color) {
     Color opposite_color = static_cast<Color>(!color);
     Square king_pos = GetFirstSquare(GetPieces(opposite_color, KING));
-
-    RemovePiece(king_pos);
+    if (king_pos != SQUARE_NB)
+        RemovePiece(king_pos);
 
     Bitboard board = ~GetEmptySquares();
 
@@ -368,7 +372,8 @@ void ChessBoard::CalcAttackMap(Color color) {
             attack_map[color] |= CalcMoveTable(cur_sqre, board, pt, color);
         }
     }
-    SetPiece(KING, opposite_color, king_pos);
+    if (king_pos != SQUARE_NB)
+        SetPiece(KING, opposite_color, king_pos);
 }
 
 void ChessBoard::CalcCaptureMask(Color color) {

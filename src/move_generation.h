@@ -2,8 +2,8 @@
 #include "basic_classes.h"
 #include "magic.h"
 #include "move.h"
+// #include "debug.h"
 
-constexpr Bitboard FULL_FIELD = 0xFFFFFFFFFFFFFFFFULL;
 
 bool IsOccupied(Bitboard bb, Square sq);
 

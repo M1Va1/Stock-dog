@@ -4,9 +4,9 @@
 enum MoveType : uint16_t {
     NORMAL,
 
-    PROMOTION = 1 << 12,
-    EN_PASSANT = 2 << 12,
-    CASTLING = 3 << 12
+    PROMOTION = 1,
+    EN_PASSANT = 2,
+    CASTLING = 3
 };
 
 class Move {

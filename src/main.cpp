@@ -5,6 +5,16 @@
 int main() {
     // MagicGenerator mg;
     // mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");
+    // mg.SaveMagics("rook_magics.dat", "bishop_magics.dat");
+    LoadTablesGlobal("rook_move_table.dat", "bishop_move_table.dat");
+    LoadMagicsGlobal("rook_magics.dat", "bishop_magics.dat");
+    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    board.PrintBoard();
+    board.GenAllMoves(BLACK);
+    VisualizeMoves(board.moves, board);
+
+    // MagicGenerator mg;
+    // mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");
     // mg.rook_move_table_ = {};
     // mg.bishop_move_table_ = {};
     // mg.LoadTables("rook_move_table.dat", "bishop_move_table.dat");
@@ -18,5 +28,4 @@ int main() {
     // PrintKingMask();
     // std::cout << "Hello worold!";
     // PrintRayMasks();
-
 }

@@ -41,14 +41,13 @@ Bitboard MagicGenerator::GenRookMoves(Square sq, Bitboard occupied) const {
     Bitboard moves = 0;
     for (Direction dir : {UP, DOWN, LEFT, RIGHT}) {
         Bitboard bb = SquareToBitboard(sq);
-        while (IsWithinBounds(bb, dir)) {
+        while (bb) {
             bb = MoveSquare(bb, dir);
             moves |= bb;
             if (occupied & bb)
                 break;
         }
     }
-
     return moves;
 }
 
@@ -56,7 +55,7 @@ Bitboard MagicGenerator::GenBishopMoves(Square sq, Bitboard occupied) const {
     Bitboard moves = 0;
     for (Direction dir : {UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
         Bitboard bb = SquareToBitboard(sq);
-        while (IsWithinBounds(bb, dir)) {
+        while (bb) {
             bb = MoveSquare(bb, dir);
             moves |= bb;
             if (occupied & bb)
@@ -97,14 +96,14 @@ Bitboard MagicGenerator::FindRookMagic(Square sq) {
     int bits_to_shift = 64 - relevant_bits;
     while (true) {
         Bitboard magic_candidate = GenRandomBitboard() & GenRandomBitboard() & GenRandomBitboard();  //
-        std::vector<Bitboard> move_table(1 << relevant_bits, 0);
+        std::vector<Bitboard> move_table(1 << relevant_bits, FULL_FIELD);
 
         bool fail = false;
         for (Bitboard blocker_mask : blocker_masks) {
             uint16_t index = (blocker_mask * magic_candidate) >> bits_to_shift;
             Bitboard moves = GenRookMoves(sq, blocker_mask);
 
-            if (move_table[index] == 0) {
+            if (move_table[index] == FULL_FIELD) {
                 move_table[index] = moves;
             } else if (move_table[index] != moves) {
                 fail = true;
@@ -128,14 +127,14 @@ Bitboard MagicGenerator::FindBishopMagic(Square sq) {
     int bits_to_shift = 64 - relevant_bits;
     while (true) {
         Bitboard magic_candidate = GenRandomBitboard() & GenRandomBitboard() & GenRandomBitboard();  //
-        std::vector<Bitboard> move_table(1 << relevant_bits, 0);
+        std::vector<Bitboard> move_table(1 << relevant_bits, FULL_FIELD);
 
         bool fail = false;
         for (Bitboard blocker_mask : blocker_masks) {
             uint16_t index = (blocker_mask * magic_candidate) >> bits_to_shift;
             Bitboard moves = GenBishopMoves(sq, blocker_mask);
 
-            if (move_table[index] == 0) {
+            if (move_table[index] == FULL_FIELD) {
                 move_table[index] = moves;
             } else if (move_table[index] != moves) {
                 fail = true;
@@ -229,6 +228,20 @@ MagicGenerator::MagicGenerator() {
     FillMasks();
     FillMagics();
 }
+void MagicGenerator::SaveMagics(const std::string& rookFilename, const std::string& bishopFilename) const {
+    std::ofstream rookFile(rookFilename, std::ios::binary);
+    if (!rookFile) {
+        std::cerr << "Error opening file for writing: " << rookFilename << "\n";
+        return;
+    }
+    rookFile.write(reinterpret_cast<const char*>(rook_magics.data()), rook_magics.size() * sizeof(Bitboard));
+    std::ofstream bishopFile(bishopFilename, std::ios::binary);
+    if (!bishopFile) {
+        std::cerr << "Error opening file for writing: " << bishopFilename << "\n";
+        return;
+    }
+    bishopFile.write(reinterpret_cast<const char*>(bishop_magics.data()), rook_magics.size() * sizeof(Bitboard));
+}
 
 void MagicGenerator::SaveTables(const std::string& rookFilename, const std::string& bishopFilename) const {
     std::ofstream rookFile(rookFilename, std::ios::binary);
@@ -282,8 +295,6 @@ void MagicGenerator::LoadTables(const std::string& rookFilename, const std::stri
         table.resize(size);
         bishopFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
     }
-    global::bishop_move_table = bishop_move_table_;
-    global::rook_move_table = rook_move_table_;
 }
 
 void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename) {
@@ -310,6 +321,23 @@ void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishop
         table.resize(size);
         bishopFile.read(reinterpret_cast<char*>(table.data()), size * sizeof(Bitboard));
     }
+}
+
+void LoadMagicsGlobal(const std::string& rookFilename, const std::string& bishopFilename) {
+    std::ifstream rookFile(rookFilename, std::ios::binary);
+    if (!rookFile) {
+        std::cerr << "Error opening file for reading: " << rookFilename << "\n";
+        return;
+    }
+    rookFile.read(reinterpret_cast<char*>(global::rook_magics.data()), global::rook_magics.size() * sizeof(Bitboard));
+
+    std::ifstream bishopFile(bishopFilename, std::ios::binary);
+    if (!bishopFile) {
+        std::cerr << "Error opening file for reading: " << bishopFilename << "\n";
+        return;
+    }
+    bishopFile.read(reinterpret_cast<char*>(global::bishop_magics.data()),
+                    global::bishop_magics.size() * sizeof(Bitboard));
 }
 
 void PrintRayMasks() {
