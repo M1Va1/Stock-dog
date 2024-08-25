@@ -8,10 +8,17 @@ int main() {
     // mg.SaveMagics("rook_magics.dat", "bishop_magics.dat");
     LoadTablesGlobal("precomputed_info/rook_move_table.dat", "precomputed_info/bishop_move_table.dat");
     LoadMagicsGlobal("precomputed_info/rook_magics.dat", "precomputed_info/bishop_magics.dat");
-    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    // PrintBishopMasks();
+    // PrintRookMasks();
+    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     board.PrintBoard();
-    board.GenAllMoves(BLACK);
-    VisualizeMoves(board.moves, board);
+    for (int i = 0; i < 5; ++i) {
+        std::cout << "depth " << i << ":    " << perft(i, board, WHITE) << '\n';
+    }
+
+    // board.GenAllMoves(WHITE);
+    // std::cout << "Pinned Pieces:   " << board.pinned_pieces << '\n';
+    // VisualizeMoves(board.moves, board);
 
     // MagicGenerator mg;
     // mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");

@@ -1,23 +1,19 @@
 #include "debug.h"
 
-// int64_t perft(int depth, ChessBoard board) {
-//     if (depth == 0)
-//         return 1;
-//     std::vector<Move> legal_moves = GenLegalMoves(board);
-//     int64_t nodes = 0;
-//     for (Move& cur_move : legal_moves) {
-//         board.MakeMove(cur_move);
-//         nodes += perft(depth - 1, board);
-//         board.MakeMove(cur_move.Inversed());
-//     }
-//     return nodes;
-// }
-
-// void PrintPerftResults(int max_depth, ChessBoard board) {
-//     for (int cur_depth = 0; cur_depth <= max_depth; ++cur_depth) {
-//         std::cout << cur_depth << ":   " << perft(cur_depth, board) << '\n';
-//     }
-// }
+int64_t perft(int depth, ChessBoard board, Color color) {
+    if (depth == 0)
+        return 1;
+    board.GenAllMoves(color);
+    if (depth == 1)
+        return board.moves.size();
+    int64_t nodes = 0;
+    for (Move& cur_move : board.moves) {
+        board.MakeMove(cur_move);
+        nodes += perft(depth - 1, board, static_cast<Color>(!color));
+        board.MakeMove(cur_move.Inversed());
+    }
+    return nodes;
+}
 
 void PrintMove(const Move cur_move) {
     std::cout << "from: " << cur_move.GetFrom() << "   to: " << cur_move.GetTo() << ' '

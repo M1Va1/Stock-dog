@@ -55,9 +55,10 @@ public:
     std::array<Bitboard, COLOR_NB> colors;
     std::array<Bitboard, COLOR_NB> attack_map;
 
-    std::array<std::vector<bool>, COLOR_NB> castling_availables = {{{1, 1}, {1, 1}}};
+    std::array<std::vector<bool>, COLOR_NB> castling_availables = {{{0, 0}, {0, 0}}};
+    Color active_side;
 
-    Bitboard pinned_pieces;
+    Bitboard pinned_pieces = 0;
     Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
     Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;
 

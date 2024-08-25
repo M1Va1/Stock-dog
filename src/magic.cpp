@@ -356,34 +356,34 @@ void PrintRayMasks() {
     }
 }
 
-// template <PieceType pt>
-// Bitboard CalcMoveTable(Square sq, Bitboard block_board);
+void PrintRookMasks() {
+    std::cout << "{\n";
+    for (uint8_t sq = A1; sq <= H8; ++sq) {
+        Bitboard mask = 0;
+        for (Direction dir : {UP, DOWN, LEFT, RIGHT}) {
+            Bitboard bb = SquareToBitboard(static_cast<Square>(sq));
+            while (IsWithinBounds(bb, dir)) {
+                bb = MoveSquare(bb, dir);
+                mask |= bb;
+            }
+        }
+        std::cout << mask << "ULL, \n";
+    }
+    std::cout << "}";
+}
 
-// template <>
-// Bitboard CalcMoveTable<BISHOP>(Square sq, Bitboard block_board) {
-//     Bitboard mask = bishop_masks[sq] & block_board;
-//     uint16_t index = (mask * bishop_magics[sq]) >> (bishop_shifts[sq]);
-//     return bishop_move_table[sq][index];
-// }
-// template <>
-// Bitboard CalcMoveTable<ROOK>(Square sq, Bitboard block_board) {
-//     Bitboard mask = rook_masks[sq] & block_board;
-//     uint16_t index = (mask * rook_magics[sq]) >> (rook_shifts[sq]);
-//     return rook_move_table[sq][index];
-// }
-// template <>
-// Bitboard CalcMoveTable<QUEEN>(Square sq, Bitboard block_board) {
-//     Bitboard mask_of_bishop = bishop_masks[sq] & block_board;
-//     Bitboard mask_of_rook = rook_masks[sq] & block_board;
-//     uint16_t bishop_index = (mask_of_bishop * bishop_magics[sq]) >> (bishop_shifts[sq]);
-//     uint16_t rook_index = (mask_of_rook * rook_magics[sq]) >> (rook_shifts[sq]);
-//     return rook_move_table[sq][rook_index] & bishop_move_table[sq][bishop_index];
-// }
-// template <>
-// Bitboard CalcMoveTable<KNIGHT>(Square sq, Bitboard block_board) {
-//     return knight_masks[sq];
-// }
-// template <PieceType pt>
-// Bitboard CalcMoveTable(Square, Bitboard) {
-//     throw std::invalid_argument("shitty piece type detected");
-// }
+void PrintBishopMasks() {
+    std::cout << "{\n";
+    for (uint8_t sq = A1; sq <= H8; ++sq) {
+        Bitboard mask = 0;
+        for (Direction dir : {UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT}) {
+            Bitboard bb = SquareToBitboard(static_cast<Square>(sq));
+            while (IsWithinBounds(bb, dir)) {
+                bb = MoveSquare(bb, dir);
+                mask |= bb;
+            }
+        }
+        std::cout << mask << "ULL, \n";
+    }
+    std::cout << "}";
+}

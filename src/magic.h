@@ -41,4 +41,5 @@ public:
 
 void LoadTablesGlobal(const std::string& rookFilename, const std::string& bishopFilename);
 void LoadMagicsGlobal(const std::string& rookFilename, const std::string& bishopFilename);
-void PrintRayMasks();
+void PrintRookMasks();
+void PrintBishopMasks();
