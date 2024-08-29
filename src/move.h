@@ -1,13 +1,7 @@
 #include "magic.h"
 #include "basic_classes.h"
 
-enum MoveType : uint16_t {
-    NORMAL,
-
-    PROMOTION = 1,
-    EN_PASSANT = 2,
-    CASTLING = 3
-};
+enum MoveType : uint16_t { NORMAL = 0, PROMOTION = 1, EN_PASSANT = 2, CASTLING = 3 };
 
 class Move {
 public:
@@ -23,6 +17,7 @@ public:
 
     MoveType GetType() const;
     PieceType GetPromoPieceType() const;
+    std::string GetUCImove() const;
     Square GetFrom() const;
     Square GetTo() const;
 
@@ -38,7 +33,7 @@ private:
     0 << 12 - normal
     1 << 12 - castling
     2 << 12 - promotion
-    3 << 12 - el_passant
+    3 << 12 - en_passant
     14-15 - destination piece
     */
 };

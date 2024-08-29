@@ -12,8 +12,12 @@ void Move::SetTo(const Square to) {
 
 void Move::SetType(MoveType type, PieceType promo_piece) {
     description &= ~TYPE_MASK;
-    description &= (type << TYPE_BITS);
+    description |= (type << TYPE_BITS);
     description |= ((promo_piece - PIECE_TYPE_DELTA) << PROMO_PIECE_BITS);
+}
+
+std::string Move::GetUCImove() const {
+    return (square_uci[GetFrom()] + square_uci[GetTo()]);
 }
 
 void Move::SetType(MoveType type) {
@@ -25,7 +29,7 @@ MoveType Move::GetType() const {
     return static_cast<MoveType>((description & TYPE_MASK) >> TYPE_BITS);
 }
 PieceType Move::GetPromoPieceType() const {
-    return static_cast<PieceType>((description >> PROMO_PIECE_BITS) + PROMO_PIECE_BITS);
+    return static_cast<PieceType>((description >> PROMO_PIECE_BITS) + PIECE_TYPE_DELTA);
 }
 
 Square Move::GetFrom() const {

@@ -79,6 +79,8 @@ Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color colo
     } else if (pt == PAWN) {
         Direction dir = (color == WHITE) ? UP : DOWN;
         return (SquareToBitboard(MoveSquare(sq, (dir + LEFT))) | SquareToBitboard(MoveSquare(sq, (dir + RIGHT))));
+    } else if (pt == KING) {
+        return king_masks[sq];
     } else {
         throw "WHRONG TYPE";
     }
@@ -91,8 +93,15 @@ bool ShortOrLongCastling(const Move castling) {
 }
 
 void ChessBoard::MakeMove(const Move cur_move) {
+    en_passant_squares = {0, 0};
     if (cur_move.GetType() == NORMAL || cur_move.GetType() == EN_PASSANT) {
-        Piece buff = RemovePiece(cur_move.GetFrom());
+        Piece buff;
+        if (IsDoublePush(cur_move)) {
+            buff = RemovePiece(cur_move.GetFrom());
+            Direction dir = (buff.color == WHITE) ? UP : DOWN;
+            en_passant_squares[!buff.color] = SquareToBitboard(MoveSquare(cur_move.GetFrom(), dir));
+        } else
+            buff = RemovePiece(cur_move.GetFrom());
         if (buff.type == KING)
             castling_availables[buff.color] = {0, 0};
         else if (buff.type == ROOK) {
@@ -105,23 +114,45 @@ void ChessBoard::MakeMove(const Move cur_move) {
             else if (cur_move.GetFrom() == H8)
                 castling_availables[1][1] = 0;
         }
-        RemovePiece(cur_move.GetTo());
+        Piece eaten_piece = RemovePiece(cur_move.GetTo());
+        if (eaten_piece.type == ROOK) {
+            if (cur_move.GetTo() == A1 && eaten_piece.color == WHITE)
+                castling_availables[0][0] = 0;
+            else if (cur_move.GetTo() == H1 && eaten_piece.color == WHITE)
+                castling_availables[0][1] = 0;
+            else if (cur_move.GetTo() == A8 && eaten_piece.color == BLACK)
+                castling_availables[1][0] = 0;
+            else if (cur_move.GetTo() == H8 && eaten_piece.color == BLACK)
+                castling_availables[1][1] = 0;
+        }
         SetPiece(buff.type, buff.color, cur_move.GetTo());
         if (cur_move.GetType() == EN_PASSANT) {
-            RemovePiece(GetFirstSquare(MoveToFriendSide(cur_move.GetTo())));
+            Direction op_dir = (buff.color == WHITE) ? DOWN : UP;
+            RemovePiece(MoveSquare(cur_move.GetTo(), op_dir));
         }
     } else if (cur_move.GetType() == PROMOTION) {
         Piece buff = RemovePiece(cur_move.GetFrom());
-        RemovePiece(cur_move.GetTo());
+        Piece eaten_piece = RemovePiece(cur_move.GetTo());
+        if (eaten_piece.type == ROOK) {
+            if (cur_move.GetTo() == A1 && eaten_piece.color == WHITE)
+                castling_availables[0][0] = 0;
+            else if (cur_move.GetTo() == H1 && eaten_piece.color == WHITE)
+                castling_availables[0][1] = 0;
+            else if (cur_move.GetTo() == A8 && eaten_piece.color == BLACK)
+                castling_availables[1][0] = 0;
+            else if (cur_move.GetTo() == H8 && eaten_piece.color == BLACK)
+                castling_availables[1][1] = 0;
+        }
         SetPiece(cur_move.GetPromoPieceType(), buff.color, cur_move.GetTo());
     } else if (cur_move.GetType() == CASTLING) {
         bool castle_ind = ShortOrLongCastling(cur_move);
         Piece king_buff = RemovePiece(cur_move.GetFrom());
         Piece rook_buff = RemovePiece(rook_start_positions[king_buff.color][castle_ind]);
+        castling_availables[king_buff.color] = {0, 0};
         SetPiece(king_buff.type, king_buff.color, cur_move.GetTo());
         SetPiece(rook_buff.type, rook_buff.color, rook_after_castling[king_buff.color][castle_ind]);
     }
-    last_move = cur_move;
+    penultimate_move = last_move = cur_move;
 }
 
 ChessBoard FenEncoder(std::string input) {
@@ -153,11 +184,16 @@ ChessBoard FenEncoder(std::string input) {
             break;
         }
         bool castle_color = islower(input[cur_ind]);
-        bool castle_side = (tolower(input[cur_ind]) == 'q');
+        bool castle_side = (tolower(input[cur_ind]) == 'k');
         new_chessboard.castling_availables[castle_color][castle_side] = 1;
         ++cur_ind;
     }
-
+    ++cur_ind;
+    new_chessboard.en_passant_squares = {0, 0};
+    if (cur_ind < input.size() && isalpha(input[cur_ind])) {
+        new_chessboard.en_passant_squares[new_chessboard.active_side] =
+            (FILES[input[cur_ind] - 'a'] & RANKS[input[cur_ind + 1] - '1']);
+    }
     return new_chessboard;
 }
 
@@ -235,7 +271,7 @@ void ChessBoard::PrintBoard() const {
 }
 
 bool ChessBoard::IsDoublePush(Move move) {
-    if (PieceOnSquare(move.GetFrom()).type == PAWN && abs(move.GetFrom() - move.GetTo()) == 2 * UP) {
+    if (PieceOnSquare(move.GetFrom()).type == PAWN && abs(move.GetFrom() - move.GetTo()) == 16) {
         return true;
     }
     return false;
@@ -258,8 +294,9 @@ void ChessBoard::GenPromotions(Square from, Square to) {
 void ChessBoard::GenPawnMoves(const Color color) {
     std::vector<Square> pawns = GetSquares(GetPieces(color, PAWN));
     Bitboard empty_squares = GetEmptySquares();
-    Bitboard DoublePushes = (IsDoublePush(last_move) ? SquareToBitboard(last_move.GetTo()) : 0);
     Direction dir = (color == WHITE) ? UP : DOWN;
+    Direction op_dir = (color == WHITE) ? DOWN : UP;
+    Bitboard DoublePushes = (MoveSquare(en_passant_squares[color], op_dir));
     Rank reachable_rank = (color == WHITE) ? RANK_4 : RANK_5;
     for (auto cur_pawn : pawns) {
         Bitboard pin_mask = FULL_FIELD;
@@ -267,7 +304,8 @@ void ChessBoard::GenPawnMoves(const Color color) {
             pin_mask = CalcPinMask(cur_pawn);
         Bitboard cur_moves =
             MoveSquare(SquareToBitboard(cur_pawn), dir) & empty_squares & push_mask |
-            MoveSquare(MoveSquare(SquareToBitboard(cur_pawn), dir) & empty_squares, dir) & empty_squares & reachable_rank & push_mask |
+            MoveSquare(MoveSquare(SquareToBitboard(cur_pawn), dir) & empty_squares, dir) & empty_squares &
+                reachable_rank & push_mask |
             MoveSquare(SquareToBitboard(cur_pawn), static_cast<Direction>(dir + LEFT)) & colors[!color] & capture_mask |
             MoveSquare(SquareToBitboard(cur_pawn), static_cast<Direction>(dir + RIGHT)) & colors[!color] & capture_mask;
         cur_moves &= pin_mask;
@@ -281,8 +319,7 @@ void ChessBoard::GenPawnMoves(const Color color) {
             }
         }
         Bitboard left_en_passant = MoveSquare(SquareToBitboard(cur_pawn), static_cast<Direction>(dir + LEFT)) &
-                                   MoveToFriendSide(DoublePushes & colors[!color]) & push_mask &
-                                   MoveToFriendSide(capture_mask) & pin_mask;
+                                   en_passant_squares[color] & (push_mask | MoveToFriendSide(capture_mask)) & pin_mask;
         Square king_pos = GetFirstSquare(GetPieces(color, KING));
         Color opposite_color = static_cast<Color>(!color);
         if (left_en_passant) {
@@ -294,12 +331,13 @@ void ChessBoard::GenPawnMoves(const Color color) {
                 SetPiece(buff2.type, buff2.color, GetFirstSquare(DoublePushes));
                 continue;
             }
+            SetPiece(buff1.type, buff1.color, cur_pawn);
+            SetPiece(buff2.type, buff2.color, GetFirstSquare(DoublePushes));
             Square to = GetFirstSquare(left_en_passant);
             moves.push_back({cur_pawn, to, EN_PASSANT});
         }
         Bitboard right_en_passant = MoveSquare(SquareToBitboard(cur_pawn), static_cast<Direction>(dir + RIGHT)) &
-                                    MoveToFriendSide(DoublePushes & colors[!color] & push_mask) &
-                                    MoveToFriendSide(capture_mask) & pin_mask;
+                                    en_passant_squares[color] & (push_mask | MoveToFriendSide(capture_mask)) & pin_mask;
         if (right_en_passant) {
             Piece buff1 = RemovePiece(cur_pawn);
             Piece buff2 = RemovePiece(GetFirstSquare(DoublePushes));
@@ -309,6 +347,8 @@ void ChessBoard::GenPawnMoves(const Color color) {
                 SetPiece(buff2.type, buff2.color, GetFirstSquare(DoublePushes));
                 continue;
             }
+            SetPiece(buff1.type, buff1.color, cur_pawn);
+            SetPiece(buff2.type, buff2.color, GetFirstSquare(DoublePushes));
             Square to = GetFirstSquare(right_en_passant);
             moves.push_back({cur_pawn, to, EN_PASSANT});
         }
@@ -431,7 +471,7 @@ void ChessBoard::CalcAttackMap(Color color) {
     Bitboard board = ~GetEmptySquares();
 
     attack_map[color] = 0;
-    for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN}) {
+    for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}) {
         std::vector<Square> squares = GetSquares(GetPieces(color, pt));
         for (Square cur_sqre : squares) {
             attack_map[color] |= CalcMoveTable(cur_sqre, board, pt, color);
@@ -454,7 +494,8 @@ void ChessBoard::CalcCaptureMask(Color color) {
     Bitboard enemy_rooks = GetPieces(opposite_color, ROOK);
     Bitboard enemy_knights = GetPieces(opposite_color, KNIGHT);
 
-    Bitboard pawns_available_moves = (MoveSquare(king_pos, (dir + LEFT)) | MoveSquare(king_pos, (dir + RIGHT)));
+    Bitboard pawns_available_moves =
+        (SquareToBitboard(MoveSquare(king_pos, (dir + LEFT))) | SquareToBitboard(MoveSquare(king_pos, (dir + RIGHT))));
     Bitboard bishop_available_moves = CalcMoveTable(king_pos, board, BISHOP);
     Bitboard rook_available_moves = CalcMoveTable(king_pos, board, ROOK);
     Bitboard knight_available_moves = knight_masks[king_pos];
@@ -462,7 +503,7 @@ void ChessBoard::CalcCaptureMask(Color color) {
     capture_mask = enemy_pawns & pawns_available_moves | enemy_bishops & bishop_available_moves |
                    enemy_knights & knight_available_moves | enemy_queens & bishop_available_moves |
                    enemy_queens & rook_available_moves | enemy_rooks & rook_available_moves;
-    if (!capture_mask)
+    if (capture_mask == 0)
         capture_mask = FULL_FIELD;
     std::vector<Square> attacked_by_squares = GetSquares(capture_mask);
     if (attacked_by_squares.size() == 2) {

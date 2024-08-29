@@ -10,29 +10,7 @@ int main() {
     LoadMagicsGlobal("precomputed_info/rook_magics.dat", "precomputed_info/bishop_magics.dat");
     // PrintBishopMasks();
     // PrintRookMasks();
-    ChessBoard board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    ChessBoard board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
     board.PrintBoard();
-    for (int i = 0; i < 5; ++i) {
-        std::cout << "depth " << i << ":    " << perft(i, board, WHITE) << '\n';
-    }
-
-    // board.GenAllMoves(WHITE);
-    // std::cout << "Pinned Pieces:   " << board.pinned_pieces << '\n';
-    // VisualizeMoves(board.moves, board);
-
-    // MagicGenerator mg;
-    // mg.SaveTables("rook_move_table.dat", "bishop_move_table.dat");
-    // mg.rook_move_table_ = {};
-    // mg.bishop_move_table_ = {};
-    // mg.LoadTables("rook_move_table.dat", "bishop_move_table.dat");
-    // mg.PrintTables();
-    // PrintKnightMasks();
-    // for(Bitboard cur_bb : rays[5]){
-    //     VisualizeBitboard(cur_bb);
-    //     std::cout << "----------\n";
-    // }
-    // std::cout << "\n\n\n";
-    // PrintKingMask();
-    // std::cout << "Hello worold!";
-    // PrintRayMasks();
-}
+    PrintPerftResults(5, board);
+}   

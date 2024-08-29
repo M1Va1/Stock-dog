@@ -58,11 +58,13 @@ public:
     std::array<std::vector<bool>, COLOR_NB> castling_availables = {{{0, 0}, {0, 0}}};
     Color active_side;
 
+    std::array<Bitboard, COLOR_NB> en_passant_squares = {0, 0};
     Bitboard pinned_pieces = 0;
     Bitboard capture_mask = 0xFFFFFFFFFFFFFFFFULL;
     Bitboard push_mask = 0xFFFFFFFFFFFFFFFFULL;
 
     Move last_move;
+    Move penultimate_move;
 };
 
 bool AvailableMove(Move move);
