@@ -34,7 +34,8 @@ Square MoveSquare(Square sq, int dir) {
 
 Square MoveSquare(Square sq, Direction dir) {
     Bitboard bb = SquareToBitboard(sq);
-    return GetFirstSquare(MoveSquare(bb, dir));
+    Square ans = GetFirstSquare(MoveSquare(bb, dir));
+    return ans;
 }
 
 Square MoveSquare(Square sq, const std::vector<Direction> &dir) {

@@ -78,6 +78,8 @@ Bitboard CalcMoveTable(Square sq, Bitboard block_board, PieceType pt, Color colo
         return knight_masks[sq];
     } else if (pt == PAWN) {
         Direction dir = (color == WHITE) ? UP : DOWN;
+        Bitboard buff_1 = SquareToBitboard(MoveSquare(sq, (dir + RIGHT)));
+        Bitboard buff_2 = SquareToBitboard(MoveSquare(sq, (dir + LEFT)));
         return (SquareToBitboard(MoveSquare(sq, (dir + LEFT))) | SquareToBitboard(MoveSquare(sq, (dir + RIGHT))));
     } else if (pt == KING) {
         return king_masks[sq];

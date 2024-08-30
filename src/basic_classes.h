@@ -132,7 +132,7 @@ inline std::string SquareToString(Square sq) {
 }
 
 inline Bitboard SquareToBitboard(const Square square) {
-    return Bitboard(1) << square;
+    return (square == SQUARE_NB ? 0 : (Bitboard(1) << square));
 }
 
 bool IsWithinBounds(Bitboard position, Direction dir);

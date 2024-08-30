@@ -2,6 +2,9 @@
 
 int64_t perft(int depth, int max_depth, ChessBoard& board, Color color, std::vector<int64_t>& types) {
     if (depth == 0) {
+        if (max_depth == 1) {
+            std::cout << board.last_move.GetUCImove() << ": " << 1 << '\n';
+        }
         return 1;
     }
     board.GenAllMoves(color);
